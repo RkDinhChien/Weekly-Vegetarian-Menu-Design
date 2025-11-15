@@ -8,7 +8,7 @@
 node_modules
 package-lock.json
 yarn.lock
-pnpm-lock.yaml
+# pnpm-lock.yaml - Keep this file for Vercel builds
 
 # Build output
 dist

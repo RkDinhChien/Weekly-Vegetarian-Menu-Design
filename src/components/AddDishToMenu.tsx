@@ -92,7 +92,11 @@ export function AddDishToMenu({ onSuccess, defaultDay, currentWeekStart }: AddDi
     try {
       const weekId = getWeekIdentifier(currentWeekStart);
       
+      // Generate unique ID with week and day: weekId-day-dishId-timestamp
+      const uniqueId = `${weekId}-${selectedDay}-${selectedDish.id}-${Date.now()}`;
+      
       const payload = {
+        id: uniqueId, // Client-generated unique ID
         name: selectedDish.name,
         description: selectedDish.description,
         price: selectedDish.basePrice,
@@ -107,6 +111,7 @@ export function AddDishToMenu({ onSuccess, defaultDay, currentWeekStart }: AddDi
       };
 
       console.log("Adding dish to menu with payload:", payload);
+      console.log("Unique ID:", uniqueId);
       console.log("Week ID:", weekId);
       console.log("Size options count:", payload.sizeOptions.length);
 

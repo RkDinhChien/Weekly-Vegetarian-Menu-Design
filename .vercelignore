@@ -1,0 +1,10 @@
+# Ignore Supabase Edge Functions (Deno runtime)
+src/supabase/functions/
+
+# Ignore development files
+.env.local
+.env.development
+
+# Ignore build artifacts
+node_modules
+dist

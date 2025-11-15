@@ -15,6 +15,9 @@ dist
 dist-ssr
 *.local
 
+# Supabase server functions (Deno only)
+src/supabase/functions/
+
 # Logs
 logs
 *.log

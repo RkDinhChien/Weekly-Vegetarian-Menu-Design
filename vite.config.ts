@@ -10,6 +10,10 @@
       target: 'esnext',
       outDir: 'build',
       minify: 'terser',
+      // Exclude server files from build
+      rollupOptions: {
+        external: [/^src\/supabase\/functions/],
+      },
       terserOptions: {
         compress: {
           drop_console: true, // Remove console.logs in production

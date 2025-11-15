@@ -82,7 +82,7 @@ export function WeeklyMenu() {
     try {
       const weekId = getWeekIdentifier(currentWeekStart);
       const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-49570ec2/menu?weekId=${weekId}`,
+        `https://${projectId}.supabase.co/functions/v1/make-server-49570ec2/menu`,
         {
           headers: {
             Authorization: `Bearer ${publicAnonKey}`,
@@ -91,7 +91,12 @@ export function WeeklyMenu() {
       );
       const data = await response.json();
       if (data.success) {
-        setMenuItems(data.data);
+        // Filter by weekId on client-side (until backend supports it)
+        const filteredItems = data.data.filter((item: MenuItem) => 
+          item.weekId === weekId || !item.weekId // Show items without weekId (legacy)
+        );
+        setMenuItems(filteredItems);
+        console.log(`Loaded ${filteredItems.length} items for week ${weekId}`);
       }
     } catch (error) {
       console.error("Error fetching menu:", error);

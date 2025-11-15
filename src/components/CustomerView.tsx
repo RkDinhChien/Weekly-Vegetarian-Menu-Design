@@ -17,6 +17,7 @@ import { projectId, publicAnonKey } from "../utils/supabase/info";
 import logo from "figma:asset/9c86d23f18fc72c44e1d78d8a22180272cd5d4f6.png";
 import bannerImage from "../../assets/BANNER (10).png";
 import { getWeekIdentifier } from "../utils/weekHelpers";
+import { provinces, districts, wards } from "../utils/vietnamLocations";
 // @ts-expect-error - lunar-javascript doesn't have TypeScript types
 import { Solar } from "lunar-javascript";
 
@@ -54,6 +55,9 @@ interface CartItem {
 interface OrderInfo {
   customerName: string;
   phone: string;
+  province: string;
+  district: string;
+  ward: string;
   address: string;
   deliveryDate: string;
   deliveryTime: string;
@@ -126,6 +130,8 @@ export function CustomerView() {
   const [weekOffset, setWeekOffset] = useState(0);
   const [cartOpen, setCartOpen] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [orderMessageDialog, setOrderMessageDialog] = useState(false);
+  const [orderMessage, setOrderMessage] = useState("");
 
   // Add to cart dialog states
   const [addDialogOpen, setAddDialogOpen] = useState(false);
@@ -137,6 +143,9 @@ export function CustomerView() {
   const [orderInfo, setOrderInfo] = useState<OrderInfo>({
     customerName: "",
     phone: "",
+    province: "",
+    district: "",
+    ward: "",
     address: "",
     deliveryDate: "",
     deliveryTime: "",
@@ -159,7 +168,7 @@ export function CustomerView() {
     try {
       const currentWeekId = getWeekIdentifier(new Date());
       const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-49570ec2/menu?weekId=${currentWeekId}`,
+        `https://${projectId}.supabase.co/functions/v1/make-server-49570ec2/menu`,
         {
           headers: {
             Authorization: `Bearer ${publicAnonKey}`,
@@ -168,12 +177,12 @@ export function CustomerView() {
       );
       const data = await response.json();
       if (data.success) {
-        const availableItems = data.data.filter((item: MenuItem) => item.available);
-        setMenuItems(availableItems);
-        // Cache the data
-        localStorage.setItem("menuCache", JSON.stringify(availableItems));
-        localStorage.setItem("menuCacheTimestamp", Date.now().toString());
-        console.log("Menu data fetched and cached for week:", currentWeekId);
+        // Filter by current week and available items
+        const currentWeekItems = data.data.filter(
+          (item: MenuItem) => item.available && (item.weekId === currentWeekId || !item.weekId)
+        );
+        setMenuItems(currentWeekItems);
+        console.log(`Loaded ${currentWeekItems.length} items for current week ${currentWeekId}`);
       }
     } catch (error) {
       console.error("Error fetching menu:", error);
@@ -424,52 +433,24 @@ export function CustomerView() {
         message += `\n📝 Ghi chú: ${orderInfo.notes}`;
       }
 
+      const facebookPageId = "61571985855948";
+      const phoneNumber = "0399691995";
+      const encodedMessage = encodeURIComponent(message);
+
       navigator.clipboard.writeText(message).then(() => {
+        setOrderMessage(message);
+        
         toast.success(`Đơn hàng ${data.data.orderNumber} đã được tạo!`, {
           duration: 5000,
         });
 
-        // Encode message for URLs
-        const encodedMessage = encodeURIComponent(message);
-        const phoneNumber = "0979637958"; // Số điện thoại Bếp Chay Dì Muộn
-        const facebookPageId = "DiBayMuon"; // Page ID của Bếp Chay Dì Muộn
-
         // Detect mobile device
         const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
-        // Show options dialog
         setTimeout(() => {
           if (isMobile) {
-            // Mobile: Show dialog with direct links
-            const choice = confirm(
-              `✅ Đơn hàng ${data.data.orderNumber} đã được tạo!\n\n` +
-                `📱 Chọn cách gửi:\n\n` +
-                `Nhấn OK → Messenger (Facebook)\n` +
-                `Nhấn Cancel → Zalo`
-            );
-
-            if (choice) {
-              // Messenger with pre-filled text (works on mobile)
-              const messengerUrl = `fb-messenger://share?link=&app_id=YOUR_APP_ID&redirect_uri=${encodeURIComponent(window.location.href)}`;
-              // Fallback to m.me with text
-              window.location.href = `https://m.me/${facebookPageId}`;
-
-              // Show instruction toast after a delay
-              setTimeout(() => {
-                toast.info(`📋 Vui lòng dán (giữ và chọn Paste) nội dung đơn hàng đã sao chép`, {
-                  duration: 6000,
-                });
-              }, 1500);
-            } else {
-              // Zalo with phone number (mobile deep link)
-              window.location.href = `https://zalo.me/${phoneNumber}`;
-
-              setTimeout(() => {
-                toast.info(`📋 Vui lòng dán (giữ và chọn Paste) nội dung đơn hàng đã sao chép`, {
-                  duration: 6000,
-                });
-              }, 1500);
-            }
+            // Mobile: Show dialog with copy button
+            setOrderMessageDialog(true);
           } else {
             // Desktop: Original behavior
             const choice = confirm(
@@ -503,6 +484,9 @@ export function CustomerView() {
         setOrderInfo({
           customerName: "",
           phone: "",
+          province: "",
+          district: "",
+          ward: "",
           address: "",
           deliveryDate: "",
           deliveryTime: "",
@@ -1200,14 +1184,80 @@ export function CustomerView() {
               />
             </div>
 
+            <div className="grid grid-cols-3 gap-3">
+              <div>
+                <Label htmlFor="province">Tỉnh/TP *</Label>
+                <Select
+                  value={orderInfo.province}
+                  onValueChange={(value: string) => {
+                    setOrderInfo({ ...orderInfo, province: value, district: "", ward: "" });
+                  }}
+                >
+                  <SelectTrigger id="province">
+                    <SelectValue placeholder="Chọn tỉnh/TP" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {provinces.map((p) => (
+                      <SelectItem key={p.code} value={p.code}>
+                        {p.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="district">Quận/Huyện *</Label>
+                <Select
+                  value={orderInfo.district}
+                  onValueChange={(value: string) => {
+                    setOrderInfo({ ...orderInfo, district: value, ward: "" });
+                  }}
+                  disabled={!orderInfo.province}
+                >
+                  <SelectTrigger id="district">
+                    <SelectValue placeholder="Chọn quận" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {orderInfo.province &&
+                      districts[orderInfo.province]?.map((d) => (
+                        <SelectItem key={d.code} value={d.code}>
+                          {d.name}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="ward">Phường/Xã</Label>
+                <Select
+                  value={orderInfo.ward}
+                  onValueChange={(value: string) => setOrderInfo({ ...orderInfo, ward: value })}
+                  disabled={!orderInfo.district}
+                >
+                  <SelectTrigger id="ward">
+                    <SelectValue placeholder="Chọn phường" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {orderInfo.district &&
+                      wards[orderInfo.district]?.map((w, idx) => (
+                        <SelectItem key={idx} value={w}>
+                          {w}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
             <div>
-              <Label htmlFor="address">Địa chỉ giao hàng *</Label>
-              <Textarea
+              <Label htmlFor="address">Số nhà, tên đường *</Label>
+              <Input
                 id="address"
                 value={orderInfo.address}
                 onChange={(e) => setOrderInfo({ ...orderInfo, address: e.target.value })}
-                placeholder="Số nhà, tên đường, quận/huyện"
-                rows={3}
+                placeholder="VD: 123 Nguyễn Văn Linh"
               />
             </div>
 
@@ -1229,7 +1279,7 @@ export function CustomerView() {
                 <Label htmlFor="deliveryTime">Giờ giao *</Label>
                 <Select
                   value={orderInfo.deliveryTime}
-                  onValueChange={(value) => setOrderInfo({ ...orderInfo, deliveryTime: value })}
+                  onValueChange={(value: string) => setOrderInfo({ ...orderInfo, deliveryTime: value })}
                 >
                   <SelectTrigger id="deliveryTime">
                     <SelectValue placeholder="Chọn giờ" />
@@ -1274,7 +1324,7 @@ export function CustomerView() {
                     <span>
                       {item.name} x{item.quantity}
                     </span>
-                    <span>{formatPrice(item.price * item.quantity)}</span>
+                    <span>{formatPrice(item.selectedSize.price * item.quantity)}</span>
                   </div>
                 ))}
                 <div className="mt-2 flex justify-between border-t border-slate-200 pt-2 font-semibold">
@@ -1309,6 +1359,51 @@ export function CustomerView() {
           </div>
         </SheetContent>
       </Sheet>
+
+      {/* Mobile Order Message Dialog */}
+      <Dialog open={orderMessageDialog} onOpenChange={setOrderMessageDialog}>
+        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>✅ Đơn hàng đã được tạo!</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="bg-slate-50 p-4 rounded-lg border">
+              <pre className="text-sm whitespace-pre-wrap font-mono">{orderMessage}</pre>
+            </div>
+            <div className="flex flex-col gap-2">
+              <Button
+                onClick={() => {
+                  navigator.clipboard.writeText(orderMessage);
+                  toast.success("Đã sao chép!");
+                }}
+                variant="outline"
+              >
+                📋 Sao chép lại
+              </Button>
+              <Button
+                onClick={() => {
+                  const facebookPageId = "61571985855948";
+                  const encodedMessage = encodeURIComponent(orderMessage);
+                  window.open(`https://m.me/${facebookPageId}?text=${encodedMessage}`, "_blank");
+                  setOrderMessageDialog(false);
+                }}
+              >
+                💬 Gửi qua Messenger
+              </Button>
+              <Button
+                onClick={() => {
+                  const phoneNumber = "0399691995";
+                  window.open(`https://zalo.me/${phoneNumber}`, "_blank");
+                  setOrderMessageDialog(false);
+                }}
+                variant="outline"
+              >
+                📱 Gửi qua Zalo
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

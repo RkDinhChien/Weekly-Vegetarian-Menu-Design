@@ -1192,11 +1192,12 @@ export function CustomerView() {
                   onValueChange={(value: string) => {
                     setOrderInfo({ ...orderInfo, province: value, district: "", ward: "" });
                   }}
+                  modal={false}
                 >
                   <SelectTrigger id="province">
                     <SelectValue placeholder="Chọn tỉnh/TP" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="z-[9999]">
                     {provinces.map((p) => (
                       <SelectItem key={p.code} value={p.code}>
                         {p.name}
@@ -1214,11 +1215,12 @@ export function CustomerView() {
                     setOrderInfo({ ...orderInfo, district: value, ward: "" });
                   }}
                   disabled={!orderInfo.province}
+                  modal={false}
                 >
                   <SelectTrigger id="district">
                     <SelectValue placeholder="Chọn quận" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="z-[9999]">
                     {orderInfo.province &&
                       districts[orderInfo.province]?.map((d) => (
                         <SelectItem key={d.code} value={d.code}>
@@ -1235,11 +1237,12 @@ export function CustomerView() {
                   value={orderInfo.ward}
                   onValueChange={(value: string) => setOrderInfo({ ...orderInfo, ward: value })}
                   disabled={!orderInfo.district}
+                  modal={false}
                 >
                   <SelectTrigger id="ward">
                     <SelectValue placeholder="Chọn phường" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="z-[9999]">
                     {orderInfo.district &&
                       wards[orderInfo.district]?.map((w, idx) => (
                         <SelectItem key={idx} value={w}>

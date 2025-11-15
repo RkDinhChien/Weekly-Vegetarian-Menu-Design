@@ -8,6 +8,7 @@ import { ImageWithFallback } from "./figma/ImageWithFallback";
 import { toast } from "sonner";
 import { projectId, publicAnonKey } from "../utils/supabase/info";
 import { AddDishToMenu } from "./AddDishToMenu";
+import { getWeekIdentifier, getMonday as getMondayHelper, getWeekDates as getWeekDatesHelper } from "../utils/weekHelpers";
 // @ts-expect-error - lunar-javascript doesn't have TypeScript types
 import { Solar } from "lunar-javascript";
 
@@ -25,6 +26,7 @@ interface MenuItem {
   category: string;
   imageUrl: string;
   day: string;
+  weekId: string; // Add week identifier
   isSpecial: boolean;
   available: boolean;
   sizeOptions?: SizeOption[];
@@ -72,16 +74,15 @@ export function WeeklyMenu() {
 
   useEffect(() => {
     setWeekDates(getWeekDates(currentWeekStart));
-  }, [currentWeekStart]);
-
-  useEffect(() => {
     fetchMenuItems();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentWeekStart]); // Refetch when week changes
 
   const fetchMenuItems = async () => {
     try {
+      const weekId = getWeekIdentifier(currentWeekStart);
       const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-49570ec2/menu`,
+        `https://${projectId}.supabase.co/functions/v1/make-server-49570ec2/menu?weekId=${weekId}`,
         {
           headers: {
             Authorization: `Bearer ${publicAnonKey}`,
@@ -318,7 +319,11 @@ export function WeeklyMenu() {
                     {menuItems.filter((item) => item.day === selectedDay).length} món
                   </Badge>
                 </div>
-                <AddDishToMenu onSuccess={fetchMenuItems} defaultDay={selectedDay} />
+                <AddDishToMenu 
+                  onSuccess={fetchMenuItems} 
+                  defaultDay={selectedDay}
+                  currentWeekStart={currentWeekStart}
+                />
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6">

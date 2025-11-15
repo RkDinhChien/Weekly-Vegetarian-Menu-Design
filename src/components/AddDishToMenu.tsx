@@ -10,6 +10,7 @@ import { ImageWithFallback } from "./figma/ImageWithFallback";
 import { projectId, publicAnonKey } from "../utils/supabase/info";
 import { Input } from "./ui/input";
 import { Switch } from "./ui/switch";
+import { getWeekIdentifier, getMonday } from "../utils/weekHelpers";
 
 interface SizeOption {
   name: string;
@@ -30,11 +31,12 @@ interface Dish {
 interface AddDishToMenuProps {
   onSuccess: () => void;
   defaultDay?: string;
+  currentWeekStart: Date;
 }
 
 const weekDays = ["Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy", "Chủ Nhật"];
 
-export function AddDishToMenu({ onSuccess, defaultDay }: AddDishToMenuProps) {
+export function AddDishToMenu({ onSuccess, defaultDay, currentWeekStart }: AddDishToMenuProps) {
   const [dishes, setDishes] = useState<Dish[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -88,6 +90,8 @@ export function AddDishToMenu({ onSuccess, defaultDay }: AddDishToMenuProps) {
     }
 
     try {
+      const weekId = getWeekIdentifier(currentWeekStart);
+      
       const payload = {
         name: selectedDish.name,
         description: selectedDish.description,
@@ -95,6 +99,7 @@ export function AddDishToMenu({ onSuccess, defaultDay }: AddDishToMenuProps) {
         category: selectedDish.category,
         imageUrl: selectedDish.imageUrl,
         day: selectedDay,
+        weekId: weekId, // Add week identifier
         isSpecial: isSpecial,
         available: true,
         dishId: selectedDish.id,
@@ -102,6 +107,7 @@ export function AddDishToMenu({ onSuccess, defaultDay }: AddDishToMenuProps) {
       };
 
       console.log("Adding dish to menu with payload:", payload);
+      console.log("Week ID:", weekId);
       console.log("Size options count:", payload.sizeOptions.length);
 
       const response = await fetch(

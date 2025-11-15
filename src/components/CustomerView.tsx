@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { projectId, publicAnonKey } from "../utils/supabase/info";
 import logo from "figma:asset/9c86d23f18fc72c44e1d78d8a22180272cd5d4f6.png";
 import bannerImage from "../../assets/BANNER (10).png";
+import { getWeekIdentifier } from "../utils/weekHelpers";
 // @ts-expect-error - lunar-javascript doesn't have TypeScript types
 import { Solar } from "lunar-javascript";
 
@@ -33,6 +34,7 @@ interface MenuItem {
   category: string;
   imageUrl: string;
   day: string;
+  weekId: string; // Add week identifier
   isSpecial: boolean;
   available: boolean;
   sizeOptions?: SizeOption[];
@@ -167,8 +169,9 @@ export function CustomerView() {
 
   const fetchMenu = async () => {
     try {
+      const currentWeekId = getWeekIdentifier(new Date());
       const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-49570ec2/menu`,
+        `https://${projectId}.supabase.co/functions/v1/make-server-49570ec2/menu?weekId=${currentWeekId}`,
         {
           headers: {
             Authorization: `Bearer ${publicAnonKey}`,
@@ -182,7 +185,7 @@ export function CustomerView() {
         // Cache the data
         localStorage.setItem("menuCache", JSON.stringify(availableItems));
         localStorage.setItem("menuCacheTimestamp", Date.now().toString());
-        console.log("Menu data fetched and cached");
+        console.log("Menu data fetched and cached for week:", currentWeekId);
       }
     } catch (error) {
       console.error("Error fetching menu:", error);
@@ -306,20 +309,24 @@ export function CustomerView() {
     const deliveryDate = new Date(orderInfo.deliveryDate);
     const deliveryDayName =
       deliveryDate.getDay() === 0 ? "Chủ Nhật" : DAYS_OF_WEEK[deliveryDate.getDay() - 1];
+    const deliveryWeekId = getWeekIdentifier(deliveryDate);
 
     console.log("🔍 Checking delivery day:", deliveryDayName);
+    console.log("📅 Delivery week:", deliveryWeekId);
     console.log(
       "📦 Cart items:",
       cart.map((i) => ({ id: i.menuItemId, name: i.name }))
     );
 
-    // Get menu items for that day
+    // Get menu items for that day AND week
     const deliveryDayMenu = menuItems.filter(
-      (item) => item.day === deliveryDayName && item.available
+      (item) => item.day === deliveryDayName && item.weekId === deliveryWeekId && item.available
     );
     console.log(
       "📋 Menu available on",
       deliveryDayName,
+      "week",
+      deliveryWeekId,
       ":",
       deliveryDayMenu.map((i) => ({ id: i.id, name: i.name }))
     );
@@ -331,8 +338,8 @@ export function CustomerView() {
     if (unavailableItems.length > 0) {
       console.error("❌ Unavailable items:", unavailableItems);
       toast.error(
-        `Một số món không có trong menu ngày ${deliveryDayName} (${new Date(orderInfo.deliveryDate).toLocaleDateString("vi-VN")}): ${unavailableItems.map((i) => i.name).join(", ")}`,
-        { duration: 6000 }
+        `Một số món không có trong menu ngày ${deliveryDayName} (${new Date(orderInfo.deliveryDate).toLocaleDateString("vi-VN")}): ${unavailableItems.map((i) => i.name).join(", ")}. Vui lòng chọn lại món từ menu tuần này!`,
+        { duration: 8000 }
       );
       setSubmitting(false);
       return;

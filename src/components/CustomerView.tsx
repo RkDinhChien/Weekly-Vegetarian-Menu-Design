@@ -144,27 +144,15 @@ export function CustomerView() {
   });
 
   useEffect(() => {
-    // Check if we have cached data (less than 5 minutes old)
-    const cachedData = localStorage.getItem("menuCache");
-    const cacheTimestamp = localStorage.getItem("menuCacheTimestamp");
-
-    if (cachedData && cacheTimestamp) {
-      const age = Date.now() - parseInt(cacheTimestamp);
-      if (age < 5 * 60 * 1000) {
-        // 5 minutes
-        try {
-          const parsed = JSON.parse(cachedData);
-          setMenuItems(parsed);
-          setLoading(false);
-          console.log("Using cached menu data");
-          return;
-        } catch (e) {
-          console.error("Cache parse error:", e);
-        }
-      }
-    }
-
+    // Initial fetch
     fetchMenu();
+    
+    // Poll for updates every 30 seconds
+    const pollInterval = setInterval(() => {
+      fetchMenu();
+    }, 30000);
+    
+    return () => clearInterval(pollInterval);
   }, []);
 
   const fetchMenu = async () => {
@@ -678,7 +666,7 @@ export function CustomerView() {
           </div>
 
           {/* Day Tabs */}
-          <div className="scrollbar-hide flex justify-center gap-2 overflow-x-auto pb-2">
+          <div className="grid grid-cols-3 gap-2 md:flex md:justify-center md:gap-2 md:overflow-x-auto md:pb-2">
             {DAYS_OF_WEEK.map((day) => {
               const dayDate = getDateForDay(day, weekOffset);
               const isTodayDay = isToday(day, weekOffset);
@@ -690,7 +678,7 @@ export function CustomerView() {
                   key={day}
                   onClick={() => setSelectedDay(day)}
                   variant={isSelected ? "default" : "outline"}
-                  className={`relative h-auto min-w-[120px] flex-col whitespace-nowrap py-3 ${
+                  className={`relative h-auto flex-col whitespace-nowrap py-2 text-xs md:min-w-[120px] md:py-3 md:text-sm ${
                     isSelected
                       ? "bg-[#00554d] text-white shadow-lg hover:bg-[#003d35]"
                       : lunarDay.isSpecial
@@ -801,20 +789,24 @@ export function CustomerView() {
                 key={category}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
+                className="rounded-2xl border-2 border-[#00554d]/10 bg-white p-6 shadow-sm"
               >
-                <h3 className="mb-4 flex items-center gap-2 border-b-2 border-[#00554d]/20 pb-2 text-[#00554d]">
-                  <span className="text-2xl">
-                    {category === "Món chính" && "🍚"}
-                    {category === "Món phụ" && "🥗"}
-                    {category === "Súp" && "🍲"}
-                    {category === "Tráng miệng" && "🍰"}
-                    {category === "Đồ uống" && "🥤"}
-                  </span>
-                  {category}
-                  <span className="ml-auto text-sm font-normal text-slate-500">
-                    ({items.length} món)
-                  </span>
-                </h3>
+                <div className="mb-6 flex items-center justify-between border-b-2 border-[#00554d]/20 pb-3">
+                  <h3 className="flex items-center gap-3 text-2xl font-bold text-[#00554d]">
+                    <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-[#00554d]/10 to-[#00554d]/20 text-3xl">
+                      {category === "Món Cuốn" && "🌯"}
+                      {category === "Món dùng kèm Bánh Mì" && "🥖"}
+                      {category === "Mì/ Bún/ Bánh canh" && "🍜"}
+                      {category === "Mì/ Bún Xào" && "🍝"}
+                      {category === "Nước uống" && "🥤"}
+                      {!["Món Cuốn", "Món dùng kèm Bánh Mì", "Mì/ Bún/ Bánh canh", "Mì/ Bún Xào", "Nước uống"].includes(category) && "🍽️"}
+                    </span>
+                    <span>{category}</span>
+                  </h3>
+                  <Badge variant="secondary" className="bg-[#00554d]/10 px-4 py-1.5 text-base text-[#00554d]">
+                    {items.length} món
+                  </Badge>
+                </div>
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                   {items.map((item) => (
                     <Card

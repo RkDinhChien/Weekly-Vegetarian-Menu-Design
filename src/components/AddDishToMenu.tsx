@@ -40,7 +40,7 @@ export function AddDishToMenu({ onSuccess, defaultDay, currentWeekStart }: AddDi
   const [dishes, setDishes] = useState<Dish[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedDish, setSelectedDish] = useState<Dish | null>(null);
+  const [selectedDishes, setSelectedDishes] = useState<Dish[]>([]); // Changed to array
   const [selectedDay, setSelectedDay] = useState<string>(defaultDay || "Thứ Hai");
   const [isSpecial, setIsSpecial] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -80,61 +80,72 @@ export function AddDishToMenu({ onSuccess, defaultDay, currentWeekStart }: AddDi
   };
 
   const handleSelectDish = (dish: Dish) => {
-    setSelectedDish(dish);
+    // Toggle selection
+    setSelectedDishes((prev) => {
+      const isSelected = prev.some((d) => d.id === dish.id);
+      if (isSelected) {
+        return prev.filter((d) => d.id !== dish.id);
+      } else {
+        return [...prev, dish];
+      }
+    });
   };
 
   const handleAddToMenu = async () => {
-    if (!selectedDish) {
-      toast.error("Vui lòng chọn món");
+    if (selectedDishes.length === 0) {
+      toast.error("Vui lòng chọn ít nhất 1 món");
       return;
     }
 
     try {
       const weekId = getWeekIdentifier(currentWeekStart);
+      let successCount = 0;
       
-      // Generate unique ID with week and day: weekId-day-dishId-timestamp
-      const uniqueId = `${weekId}-${selectedDay}-${selectedDish.id}-${Date.now()}`;
-      
-      const payload = {
-        id: uniqueId, // Client-generated unique ID
-        name: selectedDish.name,
-        description: selectedDish.description,
-        price: selectedDish.basePrice,
-        category: selectedDish.category,
-        imageUrl: selectedDish.imageUrl,
-        day: selectedDay,
-        weekId: weekId, // Add week identifier
-        isSpecial: isSpecial,
-        available: true,
-        dishId: selectedDish.id,
-        sizeOptions: selectedDish.sizeOptions || [],
-      };
+      // Add all selected dishes
+      for (const dish of selectedDishes) {
+        const uniqueId = `${weekId}-${selectedDay}-${dish.id}-${Date.now()}`;
+        
+        const payload = {
+          id: uniqueId,
+          name: dish.name,
+          description: dish.description,
+          price: dish.basePrice,
+          category: dish.category,
+          imageUrl: dish.imageUrl,
+          day: selectedDay,
+          weekId: weekId,
+          isSpecial: isSpecial,
+          available: true,
+          dishId: dish.id,
+          sizeOptions: dish.sizeOptions || [],
+        };
 
-      console.log("Adding dish to menu with payload:", payload);
-      console.log("Unique ID:", uniqueId);
-      console.log("Week ID:", weekId);
-      console.log("Size options count:", payload.sizeOptions.length);
+        const response = await fetch(
+          `https://${projectId}.supabase.co/functions/v1/make-server-49570ec2/menu`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${publicAnonKey}`,
+            },
+            body: JSON.stringify(payload),
+          }
+        );
 
-      const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-49570ec2/menu`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${publicAnonKey}`,
-          },
-          body: JSON.stringify(payload),
+        const data = await response.json();
+        if (data.success) {
+          successCount++;
         }
-      );
+        
+        // Small delay to avoid rate limiting
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
 
-      const data = await response.json();
-      if (data.success) {
-        toast.success(`Đã thêm "${selectedDish.name}" vào menu ${selectedDay}`);
+      if (successCount > 0) {
+        toast.success(`Đã thêm ${successCount} món vào menu ${selectedDay}`);
         setDialogOpen(false);
         resetForm();
         onSuccess();
-      } else {
-        toast.error(`Lỗi: ${data.error || "Không xác định"}`);
       }
     } catch (error) {
       console.error("Error adding to menu:", error);
@@ -143,7 +154,7 @@ export function AddDishToMenu({ onSuccess, defaultDay, currentWeekStart }: AddDi
   };
 
   const resetForm = () => {
-    setSelectedDish(null);
+    setSelectedDishes([]);
     setSelectedDay("Thứ Hai");
     setIsSpecial(false);
     setSearchTerm("");
@@ -202,35 +213,42 @@ export function AddDishToMenu({ onSuccess, defaultDay, currentWeekStart }: AddDi
 
             {/* Dish Selection */}
             <div>
-              <Label>Chọn món ({filteredDishes.length} món)</Label>
+              <Label>Chọn món ({selectedDishes.length}/{filteredDishes.length} được chọn)</Label>
               <div className="mt-2 grid max-h-96 gap-3 overflow-y-auto rounded-xl border border-[#00554d]/20 bg-gradient-to-br from-[#00554d]/5 to-[#00554d]/10 p-4 md:grid-cols-2">
                 {loading ? (
                   <p className="col-span-2 py-8 text-center text-slate-500">Đang tải...</p>
                 ) : filteredDishes.length > 0 ? (
-                  filteredDishes.map((dish) => (
-                    <button
-                      key={dish.id}
-                      onClick={() => handleSelectDish(dish)}
-                      className={`rounded-lg border-2 p-3 text-left transition-all hover:shadow-md ${
-                        selectedDish?.id === dish.id
-                          ? "border-[#00554d] bg-[#00554d]/10"
-                          : "border-slate-200 bg-white hover:border-[#00554d]/30"
-                      }`}
-                    >
-                      <div className="flex gap-3">
-                        <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg">
-                          {dish.imageUrl ? (
-                            <ImageWithFallback
-                              src={dish.imageUrl}
-                              alt={dish.name}
-                              className="h-full w-full object-cover"
-                            />
-                          ) : (
-                            <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#00554d]/20 to-[#00554d]/30 text-2xl">
-                              🍽️
-                            </div>
-                          )}
-                        </div>
+                  filteredDishes.map((dish) => {
+                    const isSelected = selectedDishes.some((d) => d.id === dish.id);
+                    return (
+                      <button
+                        key={dish.id}
+                        onClick={() => handleSelectDish(dish)}
+                        className={`rounded-lg border-2 p-3 text-left transition-all hover:shadow-md ${
+                          isSelected
+                            ? "border-[#00554d] bg-[#00554d]/10 shadow-md"
+                            : "border-slate-200 bg-white hover:border-[#00554d]/30"
+                        }`}
+                      >
+                        <div className="flex gap-3">
+                          <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg">
+                            {isSelected && (
+                              <div className="absolute inset-0 z-10 flex items-center justify-center bg-[#00554d]/80">
+                                <span className="text-2xl">✓</span>
+                              </div>
+                            )}
+                            {dish.imageUrl ? (
+                              <ImageWithFallback
+                                src={dish.imageUrl}
+                                alt={dish.name}
+                                className="h-full w-full object-cover"
+                              />
+                            ) : (
+                              <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#00554d]/20 to-[#00554d]/30 text-2xl">
+                                🍽️
+                              </div>
+                            )}
+                          </div>
                         <div className="flex-1">
                           <h4 className="font-semibold text-[#00554d]">{dish.name}</h4>
                           <p className="line-clamp-1 text-xs text-slate-600">{dish.description}</p>
@@ -245,7 +263,8 @@ export function AddDishToMenu({ onSuccess, defaultDay, currentWeekStart }: AddDi
                         </div>
                       </div>
                     </button>
-                  ))
+                    );
+                  })
                 ) : (
                   <div className="col-span-2 py-12 text-center">
                     <div className="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-slate-100">

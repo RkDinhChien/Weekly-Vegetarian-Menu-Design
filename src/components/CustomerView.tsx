@@ -328,42 +328,14 @@ export function CustomerView() {
     }).format(price);
   };
 
-  const submitOrder = async () => {
-    alert("🔔 BUTTON CLICKED - FUNCTION CALLED!"); 
+  const submitOrder = () => {
+    console.log("🔥 FUNCTION CALLED!");
+    alert("🔥 FUNCTION CALLED!");
     
-    try {
-      console.log("=== START ===");
-      
-      if (submitting) {
-        alert("Already submitting");
-        return;
-      }
-
-      setSubmitting(true);
-      alert("✓ Set submitting = true");
-
-      // CREATE SIMPLE TEST MESSAGE
-      const testMessage = `🌿 TEST ĐƠN HÀNG\n\nĐây là test`;
-      
-      setOrderMessage(testMessage);
-      alert("✓ Set order message");
-      
-      toast.success("✓ Test thành công!", { duration: 5000 });
-      alert("✓ Showed toast");
-
-      setSubmitting(false);
-      alert("✓ Set submitting = false");
-      
-      setOrderMessageDialog(true);
-      alert("🎯 OPENING DIALOG NOW!");
-      
-      setCheckoutOpen(false);
-      
-      console.log("=== DONE ===");
-    } catch (error) {
-      alert(`❌ ERROR: ${error}`);
-      setSubmitting(false);
-    }
+    const testMessage = `🌿 TEST ĐƠN HÀNG\n\nĐây là test`;
+    setOrderMessage(testMessage);
+    setOrderMessageDialog(true);
+    setCheckoutOpen(false);
   };
 
   const dayMenu = useMemo(
@@ -1208,28 +1180,19 @@ export function CustomerView() {
               </div>
 
               <Button
-                onClick={() => {
-                  alert(`🔍 TRƯỚC KHI GỌI:\nsubmitting = ${submitting}\ncheckoutOpen = ${checkoutOpen}`);
+                onClick={(e: React.MouseEvent) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  console.log("🔴 BUTTON CLICKED!");
+                  alert("🔴 BUTTON CLICKED!");
                   submitOrder();
                 }}
-                disabled={submitting}
-                className="w-full bg-[#00554d] hover:bg-[#003d35] disabled:cursor-not-allowed disabled:opacity-50"
+                type="button"
+                className="w-full bg-[#00554d] hover:bg-[#003d35]"
               >
-                {submitting ? (
-                  <>
-                    <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                    Đang xử lý... (BUG: submitting=true)
-                  </>
-                ) : (
-                  <>
-                    <Send className="mr-2 size-4" />
-                    Gửi đơn hàng
-                  </>
-                )}
+                <Send className="mr-2 size-4" />
+                Gửi đơn hàng
               </Button>
-              <p className="mt-2 text-xs text-center">
-                🐛 DEBUG: submitting={String(submitting)} | checkoutOpen={String(checkoutOpen)}
-              </p>
 
               <p className="mt-3 text-center text-xs text-slate-500">
                 💡 Đơn hàng sẽ được lưu và gửi qua Messenger

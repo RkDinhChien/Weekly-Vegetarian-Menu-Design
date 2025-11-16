@@ -1378,7 +1378,7 @@ export function CustomerView() {
           <DialogHeader>
             <DialogTitle>✅ Đơn hàng đã được tạo thành công!</DialogTitle>
             <DialogDescription>
-              Sao chép đơn hàng và gửi cho chúng tôi qua Messenger (m.me/61571985855948) hoặc Zalo (0399691995)
+              Sao chép đơn hàng và gửi cho chúng tôi qua Messenger (facebook.com/DiBayMuon) hoặc Zalo (0979637958)
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">

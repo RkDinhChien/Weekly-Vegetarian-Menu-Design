@@ -329,74 +329,74 @@ export function CustomerView() {
   };
 
   const submitOrder = async () => {
-    if (submitting) {
-      return;
-    }
-
-    setSubmitting(true);
-
-    if (
-      !orderInfo.customerName ||
-      !orderInfo.phone ||
-      !orderInfo.province ||
-      !orderInfo.district ||
-      !orderInfo.address ||
-      !orderInfo.deliveryDate ||
-      !orderInfo.deliveryTime
-    ) {
-      toast.error("Vui lòng điền đầy đủ thông tin (bao gồm tỉnh, quận, địa chỉ)");
-      setSubmitting(false);
-      return;
-    }
-
-    if (cart.length === 0) {
-      toast.error("Giỏ hàng trống");
-      setSubmitting(false);
-      return;
-    }
-
-    // Validate: Check if all ordered items are available on delivery date
-    const deliveryDate = new Date(orderInfo.deliveryDate);
-    const deliveryDayName =
-      deliveryDate.getDay() === 0 ? "Chủ Nhật" : DAYS_OF_WEEK[deliveryDate.getDay() - 1];
-    const deliveryWeekId = getWeekIdentifier(deliveryDate);
-
-    // Get menu items for that day AND week
-    const deliveryDayMenu = menuItems.filter(
-      (item) => item.day === deliveryDayName && item.weekId === deliveryWeekId && item.available
-    );
-
-    const unavailableItems = cart.filter(
-      (cartItem) => !deliveryDayMenu.some((menuItem) => menuItem.id === cartItem.menuItemId)
-    );
-
-    if (unavailableItems.length > 0) {
-      toast.error(
-        `Một số món không có trong menu ngày ${deliveryDayName} (${new Date(orderInfo.deliveryDate).toLocaleDateString("vi-VN")}): ${unavailableItems.map((i) => i.name).join(", ")}. Vui lòng chọn lại món từ menu tuần này!`,
-        { duration: 8000 }
-      );
-      setSubmitting(false);
-      return;
-    }
-
-    // Validate cut-off time (2 hours minimum)
-    const selectedDate = new Date(orderInfo.deliveryDate);
-    const [startTime] = orderInfo.deliveryTime.split(" - ");
-    const [hours, minutes] = startTime.split(":").map(Number);
-    selectedDate.setHours(hours, minutes, 0, 0);
-
-    const now = new Date();
-    const diffInHours = (selectedDate.getTime() - now.getTime()) / (1000 * 60 * 60);
-
-    if (diffInHours < 2) {
-      toast.error(
-        `Vui lòng chọn thời gian giao hàng ít nhất 2 giờ kể từ bây giờ (còn ${diffInHours.toFixed(1)} giờ)`
-      );
-      setSubmitting(false);
-      return;
-    }
-
     try {
+      if (submitting) {
+        return;
+      }
+
+      setSubmitting(true);
+
+      if (
+        !orderInfo.customerName ||
+        !orderInfo.phone ||
+        !orderInfo.province ||
+        !orderInfo.district ||
+        !orderInfo.address ||
+        !orderInfo.deliveryDate ||
+        !orderInfo.deliveryTime
+      ) {
+        toast.error("Vui lòng điền đầy đủ thông tin (bao gồm tỉnh, quận, địa chỉ)");
+        setSubmitting(false);
+        return;
+      }
+
+      if (cart.length === 0) {
+        toast.error("Giỏ hàng trống");
+        setSubmitting(false);
+        return;
+      }
+
+      // Validate: Check if all ordered items are available on delivery date
+      const deliveryDate = new Date(orderInfo.deliveryDate);
+      const deliveryDayName =
+        deliveryDate.getDay() === 0 ? "Chủ Nhật" : DAYS_OF_WEEK[deliveryDate.getDay() - 1];
+      const deliveryWeekId = getWeekIdentifier(deliveryDate);
+
+      // Get menu items for that day AND week
+      const deliveryDayMenu = menuItems.filter(
+        (item) => item.day === deliveryDayName && item.weekId === deliveryWeekId && item.available
+      );
+
+      const unavailableItems = cart.filter(
+        (cartItem) => !deliveryDayMenu.some((menuItem) => menuItem.id === cartItem.menuItemId)
+      );
+
+      if (unavailableItems.length > 0) {
+        toast.error(
+          `Một số món không có trong menu ngày ${deliveryDayName} (${new Date(orderInfo.deliveryDate).toLocaleDateString("vi-VN")}): ${unavailableItems.map((i) => i.name).join(", ")}. Vui lòng chọn lại món từ menu tuần này!`,
+          { duration: 8000 }
+        );
+        setSubmitting(false);
+        return;
+      }
+
+      // Validate cut-off time (2 hours minimum)
+      const selectedDate = new Date(orderInfo.deliveryDate);
+      const [startTime] = orderInfo.deliveryTime.split(" - ");
+      const [hours, minutes] = startTime.split(":").map(Number);
+      selectedDate.setHours(hours, minutes, 0, 0);
+
+      const now = new Date();
+      const diffInHours = (selectedDate.getTime() - now.getTime()) / (1000 * 60 * 60);
+
+      if (diffInHours < 2) {
+        toast.error(
+          `Vui lòng chọn thời gian giao hàng ít nhất 2 giờ kể từ bây giờ (còn ${diffInHours.toFixed(1)} giờ)`
+        );
+        setSubmitting(false);
+        return;
+      }
+
       const orderData = {
         customerName: orderInfo.customerName,
         phone: orderInfo.phone,
@@ -424,6 +424,10 @@ export function CustomerView() {
           body: JSON.stringify(orderData),
         }
       );
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
 
       const data = await response.json();
 
@@ -462,17 +466,15 @@ export function CustomerView() {
       }
 
       // Try to copy to clipboard, but don't block the flow if permission is denied
-      let clipboardSuccess = false;
       try {
         await navigator.clipboard.writeText(message);
-        clipboardSuccess = true;
       } catch (err) {
         // Clipboard write failed, continue without it
       }
 
       setOrderMessage(message);
       
-      toast.success(`Đơn hàng ${data.data.orderNumber} đã được tạo!${clipboardSuccess ? " Đã sao chép!" : ""}`, {
+      toast.success(`Đơn hàng ${data.data.orderNumber} đã được tạo!`, {
         duration: 5000,
       });
 
@@ -494,7 +496,7 @@ export function CustomerView() {
       });
     } catch (error) {
       console.error("Error creating order:", error);
-      toast.error("Có lỗi xảy ra");
+      toast.error(`Có lỗi xảy ra: ${error instanceof Error ? error.message : "Vui lòng thử lại"}`);
       setSubmitting(false);
     }
   };

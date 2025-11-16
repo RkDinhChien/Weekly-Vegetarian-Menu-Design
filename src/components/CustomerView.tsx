@@ -557,24 +557,29 @@ export function CustomerView() {
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mb-3 flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-emerald-100 to-green-100 px-4 py-2.5 shadow-sm"
+              className="mb-3 flex flex-col items-center justify-center gap-1 rounded-lg bg-gradient-to-r from-emerald-100 to-green-100 px-4 py-2.5 shadow-sm"
             >
-              <span className="text-sm font-semibold text-emerald-800">
-                📅 Ngày giao: {new Date(orderInfo.deliveryDate).toLocaleDateString("vi-VN", { 
-                  weekday: "long",
-                  day: "2-digit", 
-                  month: "2-digit",
-                  year: "numeric"
-                })}
-              </span>
-              <Button
-                onClick={() => setCheckoutOpen(true)}
-                variant="ghost"
-                size="sm"
-                className="h-6 px-2 text-xs text-emerald-700 hover:bg-emerald-200"
-              >
-                Thay đổi
-              </Button>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-semibold text-emerald-800">
+                  📅 Ngày giao: {new Date(orderInfo.deliveryDate).toLocaleDateString("vi-VN", { 
+                    weekday: "long",
+                    day: "2-digit", 
+                    month: "2-digit",
+                    year: "numeric"
+                  })}
+                </span>
+                <Button
+                  onClick={() => setCheckoutOpen(true)}
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 px-2 text-xs text-emerald-700 hover:bg-emerald-200"
+                >
+                  Thay đổi
+                </Button>
+              </div>
+              <p className="text-xs text-emerald-700">
+                ⚠️ Chỉ nhận giao các món có trong menu ngày hôm đó
+              </p>
             </motion.div>
           )}
           {!orderInfo.deliveryDate && (

@@ -329,222 +329,40 @@ export function CustomerView() {
   };
 
   const submitOrder = async () => {
+    alert("🔔 BUTTON CLICKED - FUNCTION CALLED!"); 
+    
     try {
-      console.log("=== START ORDER SUBMISSION ===");
+      console.log("=== START ===");
       
       if (submitting) {
-        console.log("Already submitting, abort");
+        alert("Already submitting");
         return;
       }
 
       setSubmitting(true);
-      console.log("Set submitting = true");
+      alert("✓ Set submitting = true");
 
-      if (
-        !orderInfo.customerName ||
-        !orderInfo.phone ||
-        !orderInfo.province ||
-        !orderInfo.district ||
-        !orderInfo.address ||
-        !orderInfo.deliveryDate ||
-        !orderInfo.deliveryTime
-      ) {
-        console.log("Validation failed:", orderInfo);
-        toast.error("Vui lòng điền đầy đủ thông tin (bao gồm tỉnh, quận, địa chỉ)");
-        setSubmitting(false);
-        return;
-      }
-
-      if (cart.length === 0) {
-        console.log("Cart is empty");
-        toast.error("Giỏ hàng trống");
-        setSubmitting(false);
-        return;
-      }
-
-      console.log("Validation passed, cart items:", cart.length);
-
-      // Validate: Check if all ordered items are available on delivery date
-      const deliveryDate = new Date(orderInfo.deliveryDate);
-      const deliveryDayName =
-        deliveryDate.getDay() === 0 ? "Chủ Nhật" : DAYS_OF_WEEK[deliveryDate.getDay() - 1];
-      const deliveryWeekId = getWeekIdentifier(deliveryDate);
-
-      console.log("Delivery day:", deliveryDayName, "Week:", deliveryWeekId);
-
-      // Get menu items for that day AND week
-      const deliveryDayMenu = menuItems.filter(
-        (item) => item.day === deliveryDayName && item.weekId === deliveryWeekId && item.available
-      );
-
-      console.log("Available menu items for delivery day:", deliveryDayMenu.length);
-
-      const unavailableItems = cart.filter(
-        (cartItem) => !deliveryDayMenu.some((menuItem) => menuItem.id === cartItem.menuItemId)
-      );
-
-      if (unavailableItems.length > 0) {
-        console.log("Unavailable items:", unavailableItems);
-        toast.error(
-          `Một số món không có trong menu ngày ${deliveryDayName} (${new Date(orderInfo.deliveryDate).toLocaleDateString("vi-VN")}): ${unavailableItems.map((i) => i.name).join(", ")}. Vui lòng chọn lại món từ menu tuần này!`,
-          { duration: 8000 }
-        );
-        setSubmitting(false);
-        return;
-      }
-
-      // Validate cut-off time (2 hours minimum)
-      const selectedDate = new Date(orderInfo.deliveryDate);
-      const [startTime] = orderInfo.deliveryTime.split(" - ");
-      const [hours, minutes] = startTime.split(":").map(Number);
-      selectedDate.setHours(hours, minutes, 0, 0);
-
-      const now = new Date();
-      const diffInHours = (selectedDate.getTime() - now.getTime()) / (1000 * 60 * 60);
-
-      console.log("Time validation - hours until delivery:", diffInHours);
-
-      if (diffInHours < 2) {
-        console.log("Time validation failed");
-        toast.error(
-          `Vui lòng chọn thời gian giao hàng ít nhất 2 giờ kể từ bây giờ (còn ${diffInHours.toFixed(1)} giờ)`
-        );
-        setSubmitting(false);
-        return;
-      }
-
-      const orderData = {
-        customerName: orderInfo.customerName,
-        phone: orderInfo.phone,
-        address: orderInfo.address,
-        deliveryDate: orderInfo.deliveryDate,
-        deliveryTime: orderInfo.deliveryTime,
-        notes: orderInfo.notes,
-        items: cart.map((item) => ({
-          id: item.menuItemId,
-          name: item.name,
-          selectedSize: item.selectedSize,
-          quantity: item.quantity,
-        })),
-        totalAmount: getTotalPrice(),
-      };
-
-      console.log("Sending order to API:", orderData);
-
-      const apiUrl = `https://${projectId}.supabase.co/functions/v1/make-server-49570ec2/orders`;
-      console.log("API URL:", apiUrl);
-
-      const response = await fetch(apiUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${publicAnonKey}`,
-        },
-        body: JSON.stringify(orderData),
-      });
-
-      console.log("Response status:", response.status, response.statusText);
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("HTTP Error Response:", errorText);
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      console.log("Response data:", data);
-
-      if (!data.success) {
-        console.error("API returned success=false:", data.error);
-        toast.error(`Lỗi khi tạo đơn hàng: ${data.error || "Vui lòng thử lại"}`);
-        setSubmitting(false);
-        return;
-      }
-
-      console.log("Order created successfully! Order number:", data.data.orderNumber);
-
-      // Create order message
-      const provinceName = provinces.find((p) => p.code === orderInfo.province)?.name || orderInfo.province;
-      const districtName = districts[orderInfo.province]?.find((d) => d.code === orderInfo.district)?.name || orderInfo.district;
-      const fullAddress = `${orderInfo.address}${orderInfo.ward ? `, ${orderInfo.ward}` : ""}, ${districtName}, ${provinceName}`;
+      // CREATE SIMPLE TEST MESSAGE
+      const testMessage = `🌿 TEST ĐƠN HÀNG\n\nĐây là test`;
       
-      // Format date to dd/mm/yyyy
-      const dateObj = new Date(orderInfo.deliveryDate);
-      const formattedDate = `${String(dateObj.getDate()).padStart(2, '0')}/${String(dateObj.getMonth() + 1).padStart(2, '0')}/${dateObj.getFullYear()}`;
+      setOrderMessage(testMessage);
+      alert("✓ Set order message");
       
-      let message = `🌿 ĐƠN ĐẶT HÀNG - BẾP CHAY DÌ MUỘN\n\n`;
-      message += `📋 Mã đơn: ${data.data.orderNumber}\n`;
-      message += `👤 Tên: ${orderInfo.customerName}\n`;
-      message += `📞 SĐT: ${orderInfo.phone}\n`;
-      message += `📍 Địa chỉ: ${fullAddress}\n`;
-      message += `📅 Ngày giao: ${formattedDate}\n`;
-      message += `🕐 Giờ giao: ${orderInfo.deliveryTime}\n\n`;
-      message += `🍽️ DANH SÁCH MÓN:\n`;
+      toast.success("✓ Test thành công!", { duration: 5000 });
+      alert("✓ Showed toast");
 
-      cart.forEach((item, index) => {
-        message += `${index + 1}. ${item.name} (${item.selectedSize.name}) x${item.quantity} - ${formatPrice(item.selectedSize.price * item.quantity)}\n`;
-      });
-
-      message += `\n💰 TỔNG: ${formatPrice(getTotalPrice())}\n`;
-
-      if (orderInfo.notes) {
-        message += `\n📝 Ghi chú: ${orderInfo.notes}`;
-      }
-
-      console.log("Order message created, length:", message.length);
-
-      // Try to copy to clipboard, but don't block the flow if permission is denied
-      try {
-        await navigator.clipboard.writeText(message);
-        console.log("✓ Clipboard copy successful");
-      } catch (err) {
-        console.log("✗ Clipboard copy failed:", err);
-      }
-
-      setOrderMessage(message);
-      console.log("Set order message state");
-      
-      toast.success(`Đơn hàng ${data.data.orderNumber} đã được tạo!`, {
-        duration: 5000,
-      });
-      console.log("Showed success toast");
-
-      // Reset states and show dialog immediately
-      console.log("Resetting states...");
       setSubmitting(false);
-      console.log("Set submitting = false");
+      alert("✓ Set submitting = false");
       
       setOrderMessageDialog(true);
-      console.log("Set orderMessageDialog = true - DIALOG SHOULD SHOW NOW!");
+      alert("🎯 OPENING DIALOG NOW!");
       
       setCheckoutOpen(false);
-      console.log("Set checkoutOpen = false");
       
-      setCart([]);
-      console.log("Cleared cart");
-      
-      setOrderInfo({
-        customerName: "",
-        phone: "",
-        province: "",
-        district: "",
-        ward: "",
-        address: "",
-        deliveryDate: "",
-        deliveryTime: "",
-        notes: "",
-      });
-      console.log("Cleared order info");
-      
-      console.log("=== ORDER SUBMISSION COMPLETE ===");
+      console.log("=== DONE ===");
     } catch (error) {
-      console.error("=== ERROR IN ORDER SUBMISSION ===");
-      console.error("Error type:", error?.constructor?.name);
-      console.error("Error message:", error instanceof Error ? error.message : String(error));
-      console.error("Full error:", error);
-      toast.error(`Có lỗi xảy ra: ${error instanceof Error ? error.message : "Vui lòng thử lại"}`);
+      alert(`❌ ERROR: ${error}`);
       setSubmitting(false);
-      console.log("Set submitting = false after error");
     }
   };
 

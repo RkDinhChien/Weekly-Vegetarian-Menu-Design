@@ -490,10 +490,6 @@ export function CustomerView() {
         message += `\n📝 Ghi chú: ${orderInfo.notes}`;
       }
 
-      const facebookPageId = "61571985855948";
-      const phoneNumber = "0399691995";
-      const encodedMessage = encodeURIComponent(message);
-
       (async () => {
         // Try to copy to clipboard, but don't block the flow if permission is denied
         let clipboardSuccess = false;
@@ -511,69 +507,24 @@ export function CustomerView() {
           duration: 5000,
         });
 
-        // Detect mobile device
-        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
         setTimeout(() => {
           setSubmitting(false);
-
-          if (isMobile) {
-            // Mobile: Show dialog with copy button so user can explicitly copy/send
-            setOrderMessageDialog(true);
-            setCheckoutOpen(false);
-            setCart([]);
-            setOrderInfo({
-              customerName: "",
-              phone: "",
-              province: "",
-              district: "",
-              ward: "",
-              address: "",
-              deliveryDate: "",
-              deliveryTime: "",
-              notes: "",
-            });
-          } else {
-            // Desktop: Original behavior (copy already attempted above)
-            const choice = confirm(
-              `✅ Đơn hàng ${data.data.orderNumber} đã được tạo!\n\n` +
-                `📋 Nội dung đơn hàng đã được sao chép (nếu trình duyệt cho phép).\n\n` +
-                `Nhấn OK để gửi qua Messenger của Bếp Chay Dì Muộn\n` +
-                `Hoặc Cancel để gửi qua Zalo`
-            );
-
-            if (choice) {
-              // Messenger - Open fanpage messenger
-              window.open(`https://m.me/${facebookPageId}?text=${encodedMessage}`, "_blank");
-              setTimeout(() => {
-                toast.info("📱 Đã mở Messenger! Nếu tin nhắn chưa tự động điền, hãy dán (Ctrl+V)", {
-                  duration: 5000,
-                });
-              }, 1000);
-            } else {
-              // Zalo
-              window.open(`https://zalo.me/${phoneNumber}`, "_blank");
-              setTimeout(() => {
-                toast.info("📱 Đã mở Zalo! Vui lòng dán (Ctrl+V) nội dung đơn hàng", {
-                  duration: 5000,
-                });
-              }, 1000);
-            }
-
-            setCart([]);
-            setOrderInfo({
-              customerName: "",
-              phone: "",
-              province: "",
-              district: "",
-              ward: "",
-              address: "",
-              deliveryDate: "",
-              deliveryTime: "",
-              notes: "",
-            });
-            setCheckoutOpen(false);
-          }
+          
+          // Always show dialog for both mobile and desktop
+          setOrderMessageDialog(true);
+          setCheckoutOpen(false);
+          setCart([]);
+          setOrderInfo({
+            customerName: "",
+            phone: "",
+            province: "",
+            district: "",
+            ward: "",
+            address: "",
+            deliveryDate: "",
+            deliveryTime: "",
+            notes: "",
+          });
         }, 500);
       })();
     } catch (error) {

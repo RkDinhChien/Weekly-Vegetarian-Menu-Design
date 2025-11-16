@@ -578,7 +578,7 @@ export function CustomerView() {
                 </Button>
               </div>
               <p className="text-xs text-emerald-700">
-                ⚠️ Chỉ nhận giao các món có trong menu ngày hôm đó
+                ⚠️ Menu thay đổi theo ngày - Vui lòng chọn món đúng ngày giao
               </p>
             </motion.div>
           )}

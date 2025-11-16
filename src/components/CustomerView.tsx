@@ -122,7 +122,16 @@ const isLunarSpecialDay = (date: Date): { isSpecial: boolean; label: string } =>
 
 export function CustomerView() {
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
-  const [cart, setCart] = useState<CartItem[]>([]);
+  const [cart, setCart] = useState<CartItem[]>(() => {
+    // Load cart from localStorage on initial mount
+    try {
+      const savedCart = localStorage.getItem("cart");
+      return savedCart ? JSON.parse(savedCart) : [];
+    } catch (error) {
+      console.error("Error loading cart from localStorage:", error);
+      return [];
+    }
+  });
   const [loading, setLoading] = useState(true);
   const [selectedDay, setSelectedDay] = useState(
     DAYS_OF_WEEK[new Date().getDay() === 0 ? 6 : new Date().getDay() - 1]
@@ -140,17 +149,54 @@ export function CustomerView() {
   const [selectedSize, setSelectedSize] = useState<SizeOption | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  const [orderInfo, setOrderInfo] = useState<OrderInfo>({
-    customerName: "",
-    phone: "",
-    province: "",
-    district: "",
-    ward: "",
-    address: "",
-    deliveryDate: "",
-    deliveryTime: "",
-    notes: "",
+  const [orderInfo, setOrderInfo] = useState<OrderInfo>(() => {
+    // Load order info from localStorage on initial mount
+    try {
+      const savedOrderInfo = localStorage.getItem("orderInfo");
+      return savedOrderInfo ? JSON.parse(savedOrderInfo) : {
+        customerName: "",
+        phone: "",
+        province: "",
+        district: "",
+        ward: "",
+        address: "",
+        deliveryDate: "",
+        deliveryTime: "",
+        notes: "",
+      };
+    } catch (error) {
+      console.error("Error loading orderInfo from localStorage:", error);
+      return {
+        customerName: "",
+        phone: "",
+        province: "",
+        district: "",
+        ward: "",
+        address: "",
+        deliveryDate: "",
+        deliveryTime: "",
+        notes: "",
+      };
+    }
   });
+
+  // Save cart to localStorage whenever it changes
+  useEffect(() => {
+    try {
+      localStorage.setItem("cart", JSON.stringify(cart));
+    } catch (error) {
+      console.error("Error saving cart to localStorage:", error);
+    }
+  }, [cart]);
+
+  // Save orderInfo to localStorage whenever it changes
+  useEffect(() => {
+    try {
+      localStorage.setItem("orderInfo", JSON.stringify(orderInfo));
+    } catch (error) {
+      console.error("Error saving orderInfo to localStorage:", error);
+    }
+  }, [orderInfo]);
 
   useEffect(() => {
     // Initial fetch

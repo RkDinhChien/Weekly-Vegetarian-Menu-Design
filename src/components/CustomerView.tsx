@@ -447,9 +447,16 @@ export function CustomerView() {
       const phoneNumber = "0399691995";
       const encodedMessage = encodeURIComponent(message);
 
-      navigator.clipboard.writeText(message).then(() => {
+      (async () => {
+        // Try to copy to clipboard, but don't block the flow if permission is denied
+        try {
+          await navigator.clipboard.writeText(message);
+        } catch (err) {
+          console.warn("Clipboard write failed:", err);
+        }
+
         setOrderMessage(message);
-        
+
         toast.success(`Đơn hàng ${data.data.orderNumber} đã được tạo!`, {
           duration: 5000,
         });
@@ -459,9 +466,9 @@ export function CustomerView() {
 
         setTimeout(() => {
           setSubmitting(false);
-          
+
           if (isMobile) {
-            // Mobile: Show dialog with copy button
+            // Mobile: Show dialog with copy button so user can explicitly copy/send
             setOrderMessageDialog(true);
             setCheckoutOpen(false);
             setCart([]);
@@ -477,10 +484,10 @@ export function CustomerView() {
               notes: "",
             });
           } else {
-            // Desktop: Original behavior
+            // Desktop: Original behavior (copy already attempted above)
             const choice = confirm(
               `✅ Đơn hàng ${data.data.orderNumber} đã được tạo!\n\n` +
-                `📋 Nội dung đơn hàng đã được sao chép.\n\n` +
+                `📋 Nội dung đơn hàng đã được sao chép (nếu trình duyệt cho phép).\n\n` +
                 `Nhấn OK để gửi qua Messenger của Bếp Chay Dì Muộn\n` +
                 `Hoặc Cancel để gửi qua Zalo`
             );
@@ -502,7 +509,7 @@ export function CustomerView() {
                 });
               }, 1000);
             }
-            
+
             setCart([]);
             setOrderInfo({
               customerName: "",
@@ -518,7 +525,7 @@ export function CustomerView() {
             setCheckoutOpen(false);
           }
         }, 500);
-      });
+      })();
     } catch (error) {
       console.error("Error creating order:", error);
       toast.error("Có lỗi xảy ra");

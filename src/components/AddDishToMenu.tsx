@@ -293,13 +293,13 @@ export function AddDishToMenu({ onSuccess, defaultDay, currentWeekStart }: AddDi
               </div>
             </div>
 
-            {/* Configuration when dish is selected */}
-            {selectedDish && (
+            {/* Configuration when dishes are selected */}
+            {selectedDishes.length > 0 && (
               <div className="space-y-4 rounded-xl border-2 border-[#00554d]/30 bg-gradient-to-br from-[#00554d]/5 to-[#00554d]/10 p-4">
                 <div className="flex items-center gap-3 border-b border-[#00554d]/20 pb-3">
                   <Calendar className="size-5 text-[#00554d]" />
                   <h3 className="font-semibold text-[#00554d]">
-                    Cấu hình món: {selectedDish.name}
+                    Cấu hình cho {selectedDishes.length} món đã chọn
                   </h3>
                 </div>
 
@@ -320,39 +320,25 @@ export function AddDishToMenu({ onSuccess, defaultDay, currentWeekStart }: AddDi
                     </Select>
                   </div>
 
-                  {/* Show size options preview */}
-                  {selectedDish.sizeOptions && selectedDish.sizeOptions.length > 0 ? (
-                    <div className="rounded-lg border border-[#00554d]/20 bg-[#00554d]/10 p-3">
-                      <p className="mb-2 text-sm font-semibold text-[#00554d]">
-                        ✓ Các phần ăn sẽ được thêm:
-                      </p>
-                      <div className="space-y-1">
-                        {selectedDish.sizeOptions.map((option, index) => (
-                          <div key={index} className="flex items-center justify-between text-sm">
-                            <span className="text-slate-700">
-                              {option.name} ({option.servings} người)
-                            </span>
-                            <span className="font-semibold text-[#00554d]">
-                              {formatPrice(option.price)}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
+                  {/* Show preview of selected dishes */}
+                  <div className="rounded-lg border border-[#00554d]/20 bg-[#00554d]/10 p-3">
+                    <p className="mb-2 text-sm font-semibold text-[#00554d]">
+                      ✓ {selectedDishes.length} món sẽ được thêm:
+                    </p>
+                    <div className="space-y-1">
+                      {selectedDishes.map((dish) => (
+                        <div key={dish.id} className="text-sm text-slate-700">
+                          • {dish.name}
+                        </div>
+                      ))}
                     </div>
-                  ) : (
-                    <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
-                      <p className="text-sm text-amber-800">
-                        ⚠️ Món này chưa có tùy chọn phần ăn. Chỉ hiển thị giá gốc:{" "}
-                        {formatPrice(selectedDish.basePrice)}
-                      </p>
-                    </div>
-                  )}
+                  </div>
                 </div>
 
                 <div className="flex items-center justify-between rounded-lg border border-[#00554d]/20 bg-white p-3">
                   <div>
                     <Label htmlFor="isSpecial" className="cursor-pointer">
-                      Món đặc biệt
+                      Đánh dấu đặc biệt
                     </Label>
                     <p className="text-xs text-slate-600">Hiển thị badge "Đặc biệt"</p>
                   </div>
@@ -375,11 +361,11 @@ export function AddDishToMenu({ onSuccess, defaultDay, currentWeekStart }: AddDi
               </Button>
               <Button
                 onClick={handleAddToMenu}
-                disabled={!selectedDish}
+                disabled={selectedDishes.length === 0}
                 className="bg-[#00554d] hover:bg-[#00554d]/90"
               >
                 <Plus className="mr-2 size-4" />
-                Thêm vào Menu
+                Thêm {selectedDishes.length > 0 ? `${selectedDishes.length} món` : ''} vào Menu
               </Button>
             </div>
           </div>

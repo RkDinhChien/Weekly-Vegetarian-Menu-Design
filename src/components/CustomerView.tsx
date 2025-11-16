@@ -328,14 +328,66 @@ export function CustomerView() {
     }).format(price);
   };
 
-  const submitOrder = () => {
-    console.log("🔥 FUNCTION CALLED!");
-    alert("🔥 FUNCTION CALLED!");
-    
-    const testMessage = `🌿 TEST ĐƠN HÀNG\n\nĐây là test`;
-    setOrderMessage(testMessage);
+  const submitOrder = async () => {
+    // Validation
+    if (!orderInfo.customerName || !orderInfo.phone || !orderInfo.province || 
+        !orderInfo.district || !orderInfo.address || !orderInfo.deliveryDate || 
+        !orderInfo.deliveryTime) {
+      toast.error("Vui lòng điền đầy đủ thông tin bắt buộc (*)");
+      return;
+    }
+
+    if (cart.length === 0) {
+      toast.error("Giỏ hàng trống!");
+      return;
+    }
+
+    // Format delivery date to dd/mm/yyyy
+    const formatDeliveryDate = (dateStr: string) => {
+      const date = new Date(dateStr);
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+      return `${day}/${month}/${year}`;
+    };
+
+    // Build full address
+    const provinceName = provinces.find(p => p.code === orderInfo.province)?.name || orderInfo.province;
+    const districtName = districts[orderInfo.province]?.find(d => d.code === orderInfo.district)?.name || orderInfo.district;
+    const wardName = orderInfo.ward || "";
+    const fullAddress = `${orderInfo.address}, ${wardName}${wardName ? ", " : ""}${districtName}, ${provinceName}`;
+
+    // Create order message
+    let message = `🌿 ĐƠN HÀNG MỚI - Dì 7 Muộn Order\n\n`;
+    message += `👤 Khách hàng: ${orderInfo.customerName}\n`;
+    message += `📱 SĐT: ${orderInfo.phone}\n`;
+    message += `📍 Địa chỉ: ${fullAddress}\n`;
+    message += `📅 Ngày giao: ${formatDeliveryDate(orderInfo.deliveryDate)}\n`;
+    message += `⏰ Giờ giao: ${orderInfo.deliveryTime}\n\n`;
+    message += `📋 CHI TIẾT ĐƠN HÀNG:\n`;
+    message += `${"─".repeat(40)}\n`;
+
+    cart.forEach((item, index) => {
+      message += `${index + 1}. ${item.name}\n`;
+      message += `   • ${item.selectedSize.name} (${item.selectedSize.servings} người)\n`;
+      message += `   • SL: ${item.quantity} x ${formatPrice(item.selectedSize.price)}\n`;
+      message += `   • Thành tiền: ${formatPrice(item.selectedSize.price * item.quantity)}\n\n`;
+    });
+
+    message += `${"─".repeat(40)}\n`;
+    message += `💰 TỔNG CỘNG: ${formatPrice(getTotalPrice())}\n`;
+
+    if (orderInfo.notes) {
+      message += `\n📝 Ghi chú: ${orderInfo.notes}\n`;
+    }
+
+    message += `\n⚠️ Vui lòng xác nhận đơn hàng!`;
+
+    setOrderMessage(message);
     setOrderMessageDialog(true);
     setCheckoutOpen(false);
+    
+    toast.success("✅ Đơn hàng đã được tạo!");
   };
 
   const dayMenu = useMemo(
@@ -1183,8 +1235,6 @@ export function CustomerView() {
                 onClick={(e: React.MouseEvent) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  console.log("🔴 BUTTON CLICKED!");
-                  alert("🔴 BUTTON CLICKED!");
                   submitOrder();
                 }}
                 type="button"

@@ -246,9 +246,21 @@ export function CustomerView() {
 
   const addToCart = useCallback(
     (item: MenuItem) => {
-      // Only allow items from selected day
-      if (item.day !== selectedDay) {
-        toast.error(`Món này thuộc ${item.day}, không thể thêm vào giỏ hàng`);
+      // Check if delivery date is selected
+      if (!orderInfo.deliveryDate) {
+        toast.error("⚠️ Vui lòng chọn ngày giao hàng trước khi thêm món");
+        setCheckoutOpen(true);
+        return;
+      }
+
+      // Get day of week from delivery date
+      const deliveryDate = new Date(orderInfo.deliveryDate);
+      const dayIndex = deliveryDate.getDay(); // 0 = Sunday, 1 = Monday, etc.
+      const deliveryDayName = dayIndex === 0 ? DAYS_OF_WEEK[6] : DAYS_OF_WEEK[dayIndex - 1];
+
+      // Only allow items from delivery day
+      if (item.day !== deliveryDayName) {
+        toast.error(`❌ Món này thuộc ${item.day}. Bạn chỉ có thể đặt món ${deliveryDayName} (${deliveryDate.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit" })})`);
         return;
       }
 
@@ -265,7 +277,7 @@ export function CustomerView() {
 
       setAddDialogOpen(true);
     },
-    [selectedDay]
+    [orderInfo.deliveryDate]
   );
 
   const confirmAddToCart = () => {
@@ -540,6 +552,50 @@ export function CustomerView() {
       {/* Day Selector */}
       <div className="sticky top-[60px] z-30 border-b border-slate-200 bg-white/95 shadow-md backdrop-blur-lg">
         <div className="container mx-auto px-4 py-4">
+          {/* Delivery Date Notice */}
+          {orderInfo.deliveryDate && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-3 flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-emerald-100 to-green-100 px-4 py-2.5 shadow-sm"
+            >
+              <span className="text-sm font-semibold text-emerald-800">
+                📅 Ngày giao: {new Date(orderInfo.deliveryDate).toLocaleDateString("vi-VN", { 
+                  weekday: "long",
+                  day: "2-digit", 
+                  month: "2-digit",
+                  year: "numeric"
+                })}
+              </span>
+              <Button
+                onClick={() => setCheckoutOpen(true)}
+                variant="ghost"
+                size="sm"
+                className="h-6 px-2 text-xs text-emerald-700 hover:bg-emerald-200"
+              >
+                Thay đổi
+              </Button>
+            </motion.div>
+          )}
+          {!orderInfo.deliveryDate && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-3 flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-amber-100 to-orange-100 px-4 py-2.5 shadow-sm"
+            >
+              <span className="text-sm font-semibold text-amber-800">
+                ⚠️ Chọn ngày giao hàng để bắt đầu đặt món
+              </span>
+              <Button
+                onClick={() => setCheckoutOpen(true)}
+                variant="ghost"
+                size="sm"
+                className="h-6 px-2 text-xs text-amber-700 hover:bg-amber-200"
+              >
+                Chọn ngày →
+              </Button>
+            </motion.div>
+          )}
           {/* Week Navigation */}
           <div className="mb-4 flex items-center justify-center gap-3">
             <Button
@@ -803,9 +859,10 @@ export function CustomerView() {
                           </div>
                           <Button
                             onClick={() => addToCart(item)}
-                            disabled={!item.available}
+                            disabled={!item.available || (!orderInfo.deliveryDate)}
                             size="default"
                             className="bg-gradient-to-r from-emerald-600 to-green-600 text-sm text-white shadow-md transition-all duration-300 hover:from-emerald-700 hover:to-green-700 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50"
+                            title={!orderInfo.deliveryDate ? "Vui lòng chọn ngày giao hàng trước" : ""}
                           >
                             <Plus className="mr-1.5 size-4" />
                             Thêm

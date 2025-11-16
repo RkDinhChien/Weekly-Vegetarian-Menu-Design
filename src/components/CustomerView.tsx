@@ -198,6 +198,14 @@ export function CustomerView() {
     }
   }, [orderInfo]);
 
+  // Safety: Reset submitting state when component mounts or checkout dialog state changes
+  useEffect(() => {
+    if (!checkoutOpen) {
+      setSubmitting(false);
+      console.log("🔄 Reset submitting state (checkout closed)");
+    }
+  }, [checkoutOpen]);
+
   useEffect(() => {
     // Initial fetch
     fetchMenu();
@@ -1203,10 +1211,12 @@ export function CustomerView() {
 
       {/* Checkout Sheet */}
       <Sheet open={checkoutOpen} onOpenChange={(open: boolean) => {
+        console.log("📋 Checkout sheet onOpenChange:", open, "current submitting:", submitting);
         setCheckoutOpen(open);
         // Reset submitting state when opening checkout
         if (open) {
           setSubmitting(false);
+          console.log("🔄 Explicitly reset submitting to false");
         }
       }}>
         <SheetContent className="w-full overflow-y-auto sm:max-w-lg">
@@ -1390,7 +1400,10 @@ export function CustomerView() {
               </div>
 
               <Button
-                onClick={submitOrder}
+                onClick={() => {
+                  console.log("🔘 Button clicked! submitting =", submitting);
+                  submitOrder();
+                }}
                 disabled={submitting}
                 className="w-full bg-[#00554d] hover:bg-[#003d35] disabled:cursor-not-allowed disabled:opacity-50"
               >

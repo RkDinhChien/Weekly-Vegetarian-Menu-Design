@@ -80,7 +80,10 @@ export function WeeklyMenu() {
 
   const fetchMenuItems = async () => {
     try {
+      setLoading(true);
       const weekId = getWeekIdentifier(currentWeekStart);
+      console.log("🔍 Fetching menu for week:", weekId);
+      
       const response = await fetch(
         `https://${projectId}.supabase.co/functions/v1/make-server-49570ec2/menu`,
         {
@@ -89,18 +92,31 @@ export function WeeklyMenu() {
           },
         }
       );
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
       const data = await response.json();
+      console.log("📦 API Response:", data);
+
       if (data.success) {
         // Filter by weekId on client-side (until backend supports it)
         const filteredItems = data.data.filter((item: MenuItem) => 
           item.weekId === weekId || !item.weekId // Show items without weekId (legacy)
         );
         setMenuItems(filteredItems);
-        console.log(`Loaded ${filteredItems.length} items for week ${weekId}`);
+        console.log(`✅ Loaded ${filteredItems.length} items for week ${weekId}`);
+        
+        if (filteredItems.length === 0) {
+          toast.info(`Chưa có món nào cho tuần ${weekId}`);
+        }
+      } else {
+        throw new Error(data.error || "Unknown error");
       }
     } catch (error) {
-      console.error("Error fetching menu:", error);
-      toast.error("Lỗi tải menu");
+      console.error("❌ Error fetching menu:", error);
+      toast.error(`Lỗi tải menu: ${error instanceof Error ? error.message : String(error)}`);
     } finally {
       setLoading(false);
     }

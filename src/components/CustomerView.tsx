@@ -1202,7 +1202,13 @@ export function CustomerView() {
       </Sheet>
 
       {/* Checkout Sheet */}
-      <Sheet open={checkoutOpen} onOpenChange={setCheckoutOpen}>
+      <Sheet open={checkoutOpen} onOpenChange={(open: boolean) => {
+        setCheckoutOpen(open);
+        // Reset submitting state when opening checkout
+        if (open) {
+          setSubmitting(false);
+        }
+      }}>
         <SheetContent className="w-full overflow-y-auto sm:max-w-lg">
           <SheetHeader>
             <SheetTitle className="text-[#00554d]">Thông tin đặt hàng</SheetTitle>

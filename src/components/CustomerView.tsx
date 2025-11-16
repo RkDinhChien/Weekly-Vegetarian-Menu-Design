@@ -420,12 +420,16 @@ export function CustomerView() {
       const districtName = districts[orderInfo.province]?.find((d) => d.code === orderInfo.district)?.name || orderInfo.district;
       const fullAddress = `${orderInfo.address}${orderInfo.ward ? `, ${orderInfo.ward}` : ""}, ${districtName}, ${provinceName}`;
       
+      // Format date to dd/mm/yyyy
+      const dateObj = new Date(orderInfo.deliveryDate);
+      const formattedDate = `${String(dateObj.getDate()).padStart(2, '0')}/${String(dateObj.getMonth() + 1).padStart(2, '0')}/${dateObj.getFullYear()}`;
+      
       let message = `🌿 ĐƠN ĐẶT HÀNG - BẾP CHAY DÌ MUỘN\n\n`;
       message += `📋 Mã đơn: ${data.data.orderNumber}\n`;
       message += `👤 Tên: ${orderInfo.customerName}\n`;
       message += `📞 SĐT: ${orderInfo.phone}\n`;
       message += `📍 Địa chỉ: ${fullAddress}\n`;
-      message += `📅 Ngày giao: ${orderInfo.deliveryDate}\n`;
+      message += `📅 Ngày giao: ${formattedDate}\n`;
       message += `🕐 Giờ giao: ${orderInfo.deliveryTime}\n\n`;
       message += `🍽️ DANH SÁCH MÓN:\n`;
 

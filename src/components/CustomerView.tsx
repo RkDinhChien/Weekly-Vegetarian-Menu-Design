@@ -461,42 +461,37 @@ export function CustomerView() {
         message += `\n📝 Ghi chú: ${orderInfo.notes}`;
       }
 
-      (async () => {
-        // Try to copy to clipboard, but don't block the flow if permission is denied
-        let clipboardSuccess = false;
-        try {
-          await navigator.clipboard.writeText(message);
-          clipboardSuccess = true;
-        } catch (err) {
-          // Clipboard write failed, continue without it
-        }
+      // Try to copy to clipboard, but don't block the flow if permission is denied
+      let clipboardSuccess = false;
+      try {
+        await navigator.clipboard.writeText(message);
+        clipboardSuccess = true;
+      } catch (err) {
+        // Clipboard write failed, continue without it
+      }
 
-        setOrderMessage(message);
+      setOrderMessage(message);
+      
+      toast.success(`Đơn hàng ${data.data.orderNumber} đã được tạo!${clipboardSuccess ? " Đã sao chép!" : ""}`, {
+        duration: 5000,
+      });
 
-        toast.success(`Đơn hàng ${data.data.orderNumber} đã được tạo!${clipboardSuccess ? " Đã sao chép!" : ""}`, {
-          duration: 5000,
-        });
-
-        setTimeout(() => {
-          setSubmitting(false);
-          
-          // Always show dialog for both mobile and desktop
-          setOrderMessageDialog(true);
-          setCheckoutOpen(false);
-          setCart([]);
-          setOrderInfo({
-            customerName: "",
-            phone: "",
-            province: "",
-            district: "",
-            ward: "",
-            address: "",
-            deliveryDate: "",
-            deliveryTime: "",
-            notes: "",
-          });
-        }, 500);
-      })();
+      // Reset states and show dialog immediately
+      setSubmitting(false);
+      setOrderMessageDialog(true);
+      setCheckoutOpen(false);
+      setCart([]);
+      setOrderInfo({
+        customerName: "",
+        phone: "",
+        province: "",
+        district: "",
+        ward: "",
+        address: "",
+        deliveryDate: "",
+        deliveryTime: "",
+        notes: "",
+      });
     } catch (error) {
       console.error("Error creating order:", error);
       toast.error("Có lỗi xảy ra");

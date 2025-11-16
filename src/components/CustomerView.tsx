@@ -1372,63 +1372,34 @@ export function CustomerView() {
         </SheetContent>
       </Sheet>
 
-      {/* Mobile Order Message Dialog */}
+      {/* Order Message Dialog */}
       <Dialog open={orderMessageDialog} onOpenChange={setOrderMessageDialog}>
         <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>✅ Đơn hàng đã được tạo!</DialogTitle>
+            <DialogTitle>✅ Đơn hàng đã được tạo thành công!</DialogTitle>
             <DialogDescription>
-              Sao chép đơn hàng và gửi cho chúng tôi qua Messenger hoặc Zalo
+              Sao chép đơn hàng và gửi cho chúng tôi qua Messenger (m.me/61571985855948) hoặc Zalo (0399691995)
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="bg-slate-50 p-4 rounded-lg border max-h-[300px] overflow-y-auto">
               <pre className="text-sm whitespace-pre-wrap font-mono">{orderMessage}</pre>
             </div>
-            <div className="flex flex-col gap-2">
-              <Button
-                onClick={() => {
-                  navigator.clipboard.writeText(orderMessage)
-                    .then(() => toast.success("✅ Đã sao chép! Hãy paste vào Messenger/Zalo"))
-                    .catch(() => toast.error("Không thể sao chép. Vui lòng chọn và copy thủ công"));
-                }}
-                className="w-full bg-[#00554d] hover:bg-[#003d35]"
-              >
-                📋 Sao chép đơn hàng
-              </Button>
-              <Button
-                onClick={() => {
-                  navigator.clipboard.writeText(orderMessage)
-                    .then(() => {
-                      const facebookPageId = "61571985855948";
-                      window.open(`https://m.me/${facebookPageId}`, "_blank");
-                      toast.success("✅ Đã sao chép! Mở Messenger và paste (Ctrl+V) vào");
-                    })
-                    .catch(() => toast.error("Không thể sao chép"));
-                }}
-                variant="outline"
-                className="w-full"
-              >
-                💬 Sao chép & Mở Messenger
-              </Button>
-              <Button
-                onClick={() => {
-                  navigator.clipboard.writeText(orderMessage)
-                    .then(() => {
-                      const phoneNumber = "0399691995";
-                      window.open(`https://zalo.me/${phoneNumber}`, "_blank");
-                      toast.success("✅ Đã sao chép! Mở Zalo và paste (Ctrl+V) vào");
-                    })
-                    .catch(() => toast.error("Không thể sao chép"));
-                }}
-                variant="outline"
-                className="w-full"
-              >
-                📱 Sao chép & Mở Zalo
-              </Button>
-            </div>
+            <Button
+              onClick={() => {
+                navigator.clipboard.writeText(orderMessage)
+                  .then(() => {
+                    toast.success("✅ Đã sao chép đơn hàng!");
+                    setOrderMessageDialog(false);
+                  })
+                  .catch(() => toast.error("Không thể sao chép. Vui lòng chọn và copy thủ công"));
+              }}
+              className="w-full bg-gradient-to-r from-emerald-600 to-green-600 py-6 text-base font-semibold hover:from-emerald-700 hover:to-green-700"
+            >
+              📋 Sao chép đơn hàng
+            </Button>
             <p className="text-xs text-center text-slate-500">
-              💡 Đơn hàng đã được lưu. Hãy paste nội dung vào chat để xác nhận!
+              💡 Sau khi sao chép, hãy paste (Ctrl+V) vào Messenger hoặc Zalo để gửi cho chúng tôi
             </p>
           </div>
         </DialogContent>

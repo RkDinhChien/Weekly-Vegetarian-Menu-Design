@@ -287,11 +287,13 @@ export function CustomerView() {
     if (
       !orderInfo.customerName ||
       !orderInfo.phone ||
+      !orderInfo.province ||
+      !orderInfo.district ||
       !orderInfo.address ||
       !orderInfo.deliveryDate ||
       !orderInfo.deliveryTime
     ) {
-      toast.error("Vui lòng điền đầy đủ thông tin");
+      toast.error("Vui lòng điền đầy đủ thông tin (bao gồm tỉnh, quận, địa chỉ)");
       setSubmitting(false);
       return;
     }
@@ -414,11 +416,15 @@ export function CustomerView() {
       console.log("✅ Order created successfully:", data.data.orderNumber);
 
       // Create order message
+      const provinceName = provinces.find((p) => p.code === orderInfo.province)?.name || orderInfo.province;
+      const districtName = districts[orderInfo.province]?.find((d) => d.code === orderInfo.district)?.name || orderInfo.district;
+      const fullAddress = `${orderInfo.address}${orderInfo.ward ? `, ${orderInfo.ward}` : ""}, ${districtName}, ${provinceName}`;
+      
       let message = `🌿 ĐƠN ĐẶT HÀNG - BẾP CHAY DÌ MUỘN\n\n`;
       message += `📋 Mã đơn: ${data.data.orderNumber}\n`;
       message += `👤 Tên: ${orderInfo.customerName}\n`;
       message += `📞 SĐT: ${orderInfo.phone}\n`;
-      message += `📍 Địa chỉ: ${orderInfo.address}\n`;
+      message += `📍 Địa chỉ: ${fullAddress}\n`;
       message += `📅 Ngày giao: ${orderInfo.deliveryDate}\n`;
       message += `🕐 Giờ giao: ${orderInfo.deliveryTime}\n\n`;
       message += `🍽️ DANH SÁCH MÓN:\n`;
@@ -448,9 +454,24 @@ export function CustomerView() {
         const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
         setTimeout(() => {
+          setSubmitting(false);
+          
           if (isMobile) {
             // Mobile: Show dialog with copy button
             setOrderMessageDialog(true);
+            setCheckoutOpen(false);
+            setCart([]);
+            setOrderInfo({
+              customerName: "",
+              phone: "",
+              province: "",
+              district: "",
+              ward: "",
+              address: "",
+              deliveryDate: "",
+              deliveryTime: "",
+              notes: "",
+            });
           } else {
             // Desktop: Original behavior
             const choice = confirm(
@@ -477,22 +498,22 @@ export function CustomerView() {
                 });
               }, 1000);
             }
+            
+            setCart([]);
+            setOrderInfo({
+              customerName: "",
+              phone: "",
+              province: "",
+              district: "",
+              ward: "",
+              address: "",
+              deliveryDate: "",
+              deliveryTime: "",
+              notes: "",
+            });
+            setCheckoutOpen(false);
           }
         }, 500);
-
-        setCart([]);
-        setOrderInfo({
-          customerName: "",
-          phone: "",
-          province: "",
-          district: "",
-          ward: "",
-          address: "",
-          deliveryDate: "",
-          deliveryTime: "",
-          notes: "",
-        });
-        setCheckoutOpen(false);
       });
     } catch (error) {
       console.error("Error creating order:", error);

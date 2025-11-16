@@ -322,6 +322,11 @@ export function CustomerView() {
   };
 
   const submitOrder = async () => {
+    console.log("🔵 submitOrder called!");
+    console.log("Cart:", cart);
+    console.log("OrderInfo:", orderInfo);
+    console.log("Submitting:", submitting);
+    
     if (submitting) {
       console.log("⏳ Already submitting...");
       return;
@@ -339,6 +344,15 @@ export function CustomerView() {
       !orderInfo.deliveryDate ||
       !orderInfo.deliveryTime
     ) {
+      console.log("❌ Validation failed:", {
+        customerName: orderInfo.customerName,
+        phone: orderInfo.phone,
+        province: orderInfo.province,
+        district: orderInfo.district,
+        address: orderInfo.address,
+        deliveryDate: orderInfo.deliveryDate,
+        deliveryTime: orderInfo.deliveryTime,
+      });
       toast.error("Vui lòng điền đầy đủ thông tin (bao gồm tỉnh, quận, địa chỉ)");
       setSubmitting(false);
       return;

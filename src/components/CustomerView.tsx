@@ -1218,7 +1218,7 @@ export function CustomerView() {
                   <SelectTrigger id="province">
                     <SelectValue placeholder="Chọn tỉnh/TP" />
                   </SelectTrigger>
-                  <SelectContent className="z-[9999]">
+                  <SelectContent className="z-[9999] max-h-[300px] overflow-y-auto">
                     {provinces.map((p) => (
                       <SelectItem key={p.code} value={p.code}>
                         {p.name}
@@ -1241,7 +1241,7 @@ export function CustomerView() {
                   <SelectTrigger id="district">
                     <SelectValue placeholder="Chọn quận" />
                   </SelectTrigger>
-                  <SelectContent className="z-[9999]">
+                  <SelectContent className="z-[9999] max-h-[300px] overflow-y-auto">
                     {orderInfo.province &&
                       districts[orderInfo.province]?.map((d) => (
                         <SelectItem key={d.code} value={d.code}>
@@ -1263,7 +1263,7 @@ export function CustomerView() {
                   <SelectTrigger id="ward">
                     <SelectValue placeholder="Chọn phường" />
                   </SelectTrigger>
-                  <SelectContent className="z-[9999]">
+                  <SelectContent className="z-[9999] max-h-[300px] overflow-y-auto">
                     {orderInfo.district &&
                       wards[orderInfo.district]?.map((w, idx) => (
                         <SelectItem key={idx} value={w}>

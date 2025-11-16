@@ -202,7 +202,6 @@ export function CustomerView() {
   useEffect(() => {
     if (!checkoutOpen) {
       setSubmitting(false);
-      console.log("🔄 Reset submitting state (checkout closed)");
     }
   }, [checkoutOpen]);
 
@@ -330,18 +329,11 @@ export function CustomerView() {
   };
 
   const submitOrder = async () => {
-    console.log("🔵 submitOrder called!");
-    console.log("Cart:", cart);
-    console.log("OrderInfo:", orderInfo);
-    console.log("Submitting:", submitting);
-    
     if (submitting) {
-      console.log("⏳ Already submitting...");
       return;
     }
 
     setSubmitting(true);
-    console.log("🚀 Starting order submission...");
 
     if (
       !orderInfo.customerName ||
@@ -352,15 +344,6 @@ export function CustomerView() {
       !orderInfo.deliveryDate ||
       !orderInfo.deliveryTime
     ) {
-      console.log("❌ Validation failed:", {
-        customerName: orderInfo.customerName,
-        phone: orderInfo.phone,
-        province: orderInfo.province,
-        district: orderInfo.district,
-        address: orderInfo.address,
-        deliveryDate: orderInfo.deliveryDate,
-        deliveryTime: orderInfo.deliveryTime,
-      });
       toast.error("Vui lòng điền đầy đủ thông tin (bao gồm tỉnh, quận, địa chỉ)");
       setSubmitting(false);
       return;
@@ -378,24 +361,9 @@ export function CustomerView() {
       deliveryDate.getDay() === 0 ? "Chủ Nhật" : DAYS_OF_WEEK[deliveryDate.getDay() - 1];
     const deliveryWeekId = getWeekIdentifier(deliveryDate);
 
-    console.log("🔍 Checking delivery day:", deliveryDayName);
-    console.log("📅 Delivery week:", deliveryWeekId);
-    console.log(
-      "📦 Cart items:",
-      cart.map((i) => ({ id: i.menuItemId, name: i.name }))
-    );
-
     // Get menu items for that day AND week
     const deliveryDayMenu = menuItems.filter(
       (item) => item.day === deliveryDayName && item.weekId === deliveryWeekId && item.available
-    );
-    console.log(
-      "📋 Menu available on",
-      deliveryDayName,
-      "week",
-      deliveryWeekId,
-      ":",
-      deliveryDayMenu.map((i) => ({ id: i.id, name: i.name }))
     );
 
     const unavailableItems = cart.filter(
@@ -403,7 +371,6 @@ export function CustomerView() {
     );
 
     if (unavailableItems.length > 0) {
-      console.error("❌ Unavailable items:", unavailableItems);
       toast.error(
         `Một số món không có trong menu ngày ${deliveryDayName} (${new Date(orderInfo.deliveryDate).toLocaleDateString("vi-VN")}): ${unavailableItems.map((i) => i.name).join(", ")}. Vui lòng chọn lại món từ menu tuần này!`,
         { duration: 8000 }
@@ -411,8 +378,6 @@ export function CustomerView() {
       setSubmitting(false);
       return;
     }
-
-    console.log("✅ All items available for delivery day");
 
     // Validate cut-off time (2 hours minimum)
     const selectedDate = new Date(orderInfo.deliveryDate);
@@ -423,12 +388,6 @@ export function CustomerView() {
     const now = new Date();
     const diffInHours = (selectedDate.getTime() - now.getTime()) / (1000 * 60 * 60);
 
-    console.log("⏰ Time check:", {
-      now: now.toLocaleString("vi-VN"),
-      deliveryTime: selectedDate.toLocaleString("vi-VN"),
-      diffInHours: diffInHours.toFixed(2),
-    });
-
     if (diffInHours < 2) {
       toast.error(
         `Vui lòng chọn thời gian giao hàng ít nhất 2 giờ kể từ bây giờ (còn ${diffInHours.toFixed(1)} giờ)`
@@ -436,8 +395,6 @@ export function CustomerView() {
       setSubmitting(false);
       return;
     }
-
-    console.log("✅ Time validation passed");
 
     try {
       const orderData = {
@@ -456,8 +413,6 @@ export function CustomerView() {
         totalAmount: getTotalPrice(),
       };
 
-      console.log("📤 Sending order:", orderData);
-
       const response = await fetch(
         `https://${projectId}.supabase.co/functions/v1/make-server-49570ec2/orders`,
         {
@@ -470,19 +425,13 @@ export function CustomerView() {
         }
       );
 
-      console.log("📥 Response status:", response.status);
-
       const data = await response.json();
-      console.log("📥 Response data:", data);
 
       if (!data.success) {
-        console.error("❌ Order failed:", data.error);
         toast.error(`Lỗi khi tạo đơn hàng: ${data.error || "Vui lòng thử lại"}`);
         setSubmitting(false);
         return;
       }
-
-      console.log("✅ Order created successfully:", data.data.orderNumber);
 
       // Create order message
       const provinceName = provinces.find((p) => p.code === orderInfo.province)?.name || orderInfo.province;
@@ -518,9 +467,8 @@ export function CustomerView() {
         try {
           await navigator.clipboard.writeText(message);
           clipboardSuccess = true;
-          console.log("✅ Clipboard copy successful");
         } catch (err) {
-          console.warn("⚠️ Clipboard write failed:", err);
+          // Clipboard write failed, continue without it
         }
 
         setOrderMessage(message);
@@ -1211,12 +1159,10 @@ export function CustomerView() {
 
       {/* Checkout Sheet */}
       <Sheet open={checkoutOpen} onOpenChange={(open: boolean) => {
-        console.log("📋 Checkout sheet onOpenChange:", open, "current submitting:", submitting);
         setCheckoutOpen(open);
         // Reset submitting state when opening checkout
         if (open) {
           setSubmitting(false);
-          console.log("🔄 Explicitly reset submitting to false");
         }
       }}>
         <SheetContent className="w-full overflow-y-auto sm:max-w-lg">
@@ -1400,10 +1346,7 @@ export function CustomerView() {
               </div>
 
               <Button
-                onClick={() => {
-                  console.log("🔘 Button clicked! submitting =", submitting);
-                  submitOrder();
-                }}
+                onClick={submitOrder}
                 disabled={submitting}
                 className="w-full bg-[#00554d] hover:bg-[#003d35] disabled:cursor-not-allowed disabled:opacity-50"
               >

@@ -1208,14 +1208,17 @@ export function CustomerView() {
               </div>
 
               <Button
-                onClick={submitOrder}
+                onClick={() => {
+                  alert(`🔍 TRƯỚC KHI GỌI:\nsubmitting = ${submitting}\ncheckoutOpen = ${checkoutOpen}`);
+                  submitOrder();
+                }}
                 disabled={submitting}
                 className="w-full bg-[#00554d] hover:bg-[#003d35] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {submitting ? (
                   <>
                     <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                    Đang xử lý...
+                    Đang xử lý... (BUG: submitting=true)
                   </>
                 ) : (
                   <>
@@ -1224,6 +1227,9 @@ export function CustomerView() {
                   </>
                 )}
               </Button>
+              <p className="mt-2 text-xs text-center">
+                🐛 DEBUG: submitting={String(submitting)} | checkoutOpen={String(checkoutOpen)}
+              </p>
 
               <p className="mt-3 text-center text-xs text-slate-500">
                 💡 Đơn hàng sẽ được lưu và gửi qua Messenger

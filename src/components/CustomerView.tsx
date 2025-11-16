@@ -342,52 +342,104 @@ export function CustomerView() {
       return;
     }
 
-    // Format delivery date to dd/mm/yyyy
-    const formatDeliveryDate = (dateStr: string) => {
-      const date = new Date(dateStr);
-      const day = String(date.getDate()).padStart(2, '0');
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const year = date.getFullYear();
-      return `${day}/${month}/${year}`;
-    };
+    setSubmitting(true);
 
-    // Build full address
-    const provinceName = provinces.find(p => p.code === orderInfo.province)?.name || orderInfo.province;
-    const districtName = districts[orderInfo.province]?.find(d => d.code === orderInfo.district)?.name || orderInfo.district;
-    const wardName = orderInfo.ward || "";
-    const fullAddress = `${orderInfo.address}, ${wardName}${wardName ? ", " : ""}${districtName}, ${provinceName}`;
+    try {
+      // Format delivery date to dd/mm/yyyy
+      const formatDeliveryDate = (dateStr: string) => {
+        const date = new Date(dateStr);
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        return `${day}/${month}/${year}`;
+      };
 
-    // Create order message
-    let message = `🌿 ĐƠN HÀNG MỚI - Dì 7 Muộn Order\n\n`;
-    message += `👤 Khách hàng: ${orderInfo.customerName}\n`;
-    message += `📱 SĐT: ${orderInfo.phone}\n`;
-    message += `📍 Địa chỉ: ${fullAddress}\n`;
-    message += `📅 Ngày giao: ${formatDeliveryDate(orderInfo.deliveryDate)}\n`;
-    message += `⏰ Giờ giao: ${orderInfo.deliveryTime}\n\n`;
-    message += `📋 CHI TIẾT ĐƠN HÀNG:\n`;
-    message += `${"─".repeat(40)}\n`;
+      // Build full address
+      const provinceName = provinces.find(p => p.code === orderInfo.province)?.name || orderInfo.province;
+      const districtName = districts[orderInfo.province]?.find(d => d.code === orderInfo.district)?.name || orderInfo.district;
+      const wardName = orderInfo.ward || "";
+      const fullAddress = `${orderInfo.address}, ${wardName}${wardName ? ", " : ""}${districtName}, ${provinceName}`;
 
-    cart.forEach((item, index) => {
-      message += `${index + 1}. ${item.name}\n`;
-      message += `   • ${item.selectedSize.name} (${item.selectedSize.servings} người)\n`;
-      message += `   • SL: ${item.quantity} x ${formatPrice(item.selectedSize.price)}\n`;
-      message += `   • Thành tiền: ${formatPrice(item.selectedSize.price * item.quantity)}\n\n`;
-    });
+      // Prepare order data for API
+      const orderData = {
+        customerName: orderInfo.customerName,
+        phone: orderInfo.phone,
+        address: fullAddress,
+        deliveryDate: orderInfo.deliveryDate,
+        deliveryTime: orderInfo.deliveryTime,
+        notes: orderInfo.notes,
+        items: cart.map(item => ({
+          name: item.name,
+          sizeName: item.selectedSize.name,
+          servings: item.selectedSize.servings,
+          price: item.selectedSize.price,
+          quantity: item.quantity,
+          total: item.selectedSize.price * item.quantity
+        })),
+        totalAmount: getTotalPrice(),
+        status: 'pending'
+      };
 
-    message += `${"─".repeat(40)}\n`;
-    message += `💰 TỔNG CỘNG: ${formatPrice(getTotalPrice())}\n`;
+      // Save order to database
+      const response = await fetch(
+        `https://${projectId}.supabase.co/functions/v1/make-server-49570ec2/orders`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${publicAnonKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(orderData)
+        }
+      );
 
-    if (orderInfo.notes) {
-      message += `\n📝 Ghi chú: ${orderInfo.notes}\n`;
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.error || 'Không thể tạo đơn hàng');
+      }
+
+      // Create order message for copying
+      let message = `🌿 ĐƠN HÀNG MỚI - Dì 7 Muộn Order\n\n`;
+      message += `👤 Khách hàng: ${orderInfo.customerName}\n`;
+      message += `📱 SĐT: ${orderInfo.phone}\n`;
+      message += `📍 Địa chỉ: ${fullAddress}\n`;
+      message += `📅 Ngày giao: ${formatDeliveryDate(orderInfo.deliveryDate)}\n`;
+      message += `⏰ Giờ giao: ${orderInfo.deliveryTime}\n\n`;
+      message += `📋 CHI TIẾT ĐƠN HÀNG:\n`;
+      message += `${"─".repeat(40)}\n`;
+
+      cart.forEach((item, index) => {
+        message += `${index + 1}. ${item.name}\n`;
+        message += `   • ${item.selectedSize.name} (${item.selectedSize.servings} người)\n`;
+        message += `   • SL: ${item.quantity} x ${formatPrice(item.selectedSize.price)}\n`;
+        message += `   • Thành tiền: ${formatPrice(item.selectedSize.price * item.quantity)}\n\n`;
+      });
+
+      message += `${"─".repeat(40)}\n`;
+      message += `💰 TỔNG CỘNG: ${formatPrice(getTotalPrice())}\n`;
+
+      if (orderInfo.notes) {
+        message += `\n📝 Ghi chú: ${orderInfo.notes}\n`;
+      }
+
+      message += `\n⚠️ Vui lòng xác nhận đơn hàng!`;
+
+      setOrderMessage(message);
+      setOrderMessageDialog(true);
+      setCheckoutOpen(false);
+      
+      // Clear cart after successful order
+      setCart([]);
+      localStorage.removeItem('cart');
+      
+      toast.success("✅ Đơn hàng đã được tạo thành công!");
+    } catch (error) {
+      console.error('Order submission error:', error);
+      toast.error(error instanceof Error ? error.message : 'Không thể tạo đơn hàng. Vui lòng thử lại!');
+    } finally {
+      setSubmitting(false);
     }
-
-    message += `\n⚠️ Vui lòng xác nhận đơn hàng!`;
-
-    setOrderMessage(message);
-    setOrderMessageDialog(true);
-    setCheckoutOpen(false);
-    
-    toast.success("✅ Đơn hàng đã được tạo!");
   };
 
   const dayMenu = useMemo(
@@ -1238,10 +1290,20 @@ export function CustomerView() {
                   submitOrder();
                 }}
                 type="button"
-                className="w-full bg-[#00554d] hover:bg-[#003d35]"
+                disabled={submitting}
+                className="w-full bg-[#00554d] hover:bg-[#003d35] disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Send className="mr-2 size-4" />
-                Gửi đơn hàng
+                {submitting ? (
+                  <>
+                    <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                    Đang xử lý...
+                  </>
+                ) : (
+                  <>
+                    <Send className="mr-2 size-4" />
+                    Gửi đơn hàng
+                  </>
+                )}
               </Button>
 
               <p className="mt-3 text-center text-xs text-slate-500">
@@ -1259,7 +1321,7 @@ export function CustomerView() {
           <DialogHeader>
             <DialogTitle>✅ Đơn hàng đã được tạo!</DialogTitle>
             <DialogDescription>
-              Nhấn "Sao chép" rồi gửi qua Messenger hoặc Zalo
+              Sao chép đơn hàng và gửi cho chúng tôi qua Messenger hoặc Zalo
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
@@ -1270,39 +1332,47 @@ export function CustomerView() {
               <Button
                 onClick={() => {
                   navigator.clipboard.writeText(orderMessage)
-                    .then(() => toast.success("✅ Đã sao chép! Bạn có thể dán vào Messenger/Zalo"))
+                    .then(() => toast.success("✅ Đã sao chép! Hãy paste vào Messenger/Zalo"))
                     .catch(() => toast.error("Không thể sao chép. Vui lòng chọn và copy thủ công"));
                 }}
-                variant="outline"
-                className="w-full"
+                className="w-full bg-[#00554d] hover:bg-[#003d35]"
               >
                 📋 Sao chép đơn hàng
               </Button>
               <Button
                 onClick={() => {
-                  const facebookPageId = "61571985855948";
-                  const encodedMessage = encodeURIComponent(orderMessage);
-                  window.open(`https://m.me/${facebookPageId}?text=${encodedMessage}`, "_blank");
-                  toast.info("📱 Đã mở Messenger. Nếu nội dung chưa có, hãy dán (paste) vào!");
-                  setOrderMessageDialog(false);
-                }}
-                className="w-full"
-              >
-                💬 Mở Messenger
-              </Button>
-              <Button
-                onClick={() => {
-                  const phoneNumber = "0399691995";
-                  window.open(`https://zalo.me/${phoneNumber}`, "_blank");
-                  toast.info("📱 Đã mở Zalo. Vui lòng dán (paste) nội dung đơn hàng!");
-                  setOrderMessageDialog(false);
+                  navigator.clipboard.writeText(orderMessage)
+                    .then(() => {
+                      const facebookPageId = "61571985855948";
+                      window.open(`https://m.me/${facebookPageId}`, "_blank");
+                      toast.success("✅ Đã sao chép! Mở Messenger và paste (Ctrl+V) vào");
+                    })
+                    .catch(() => toast.error("Không thể sao chép"));
                 }}
                 variant="outline"
                 className="w-full"
               >
-                📱 Mở Zalo
+                💬 Sao chép & Mở Messenger
+              </Button>
+              <Button
+                onClick={() => {
+                  navigator.clipboard.writeText(orderMessage)
+                    .then(() => {
+                      const phoneNumber = "0399691995";
+                      window.open(`https://zalo.me/${phoneNumber}`, "_blank");
+                      toast.success("✅ Đã sao chép! Mở Zalo và paste (Ctrl+V) vào");
+                    })
+                    .catch(() => toast.error("Không thể sao chép"));
+                }}
+                variant="outline"
+                className="w-full"
+              >
+                📱 Sao chép & Mở Zalo
               </Button>
             </div>
+            <p className="text-xs text-center text-slate-500">
+              💡 Đơn hàng đã được lưu. Hãy paste nội dung vào chat để xác nhận!
+            </p>
           </div>
         </DialogContent>
       </Dialog>

@@ -3,6 +3,7 @@
 .env.local
 .env.production
 .env.development
+.env*.local
 
 # Dependencies
 node_modules
@@ -13,7 +14,13 @@ yarn.lock
 # Build output
 dist
 dist-ssr
+build
 *.local
+
+# Database & API keys (NEVER COMMIT!)
+**/supabase/client.ts.backup
+**/*key*.txt
+**/*secret*.txt
 
 # Supabase server functions (Deno only)
 src/supabase/functions/

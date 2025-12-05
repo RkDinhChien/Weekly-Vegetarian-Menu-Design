@@ -1,23 +1,24 @@
 import { useEffect, useState, useMemo, useCallback } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
-import { Button } from "./ui/button";
-import { Badge } from "./ui/badge";
-import { Skeleton } from "./ui/skeleton";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { ShoppingCart, Plus, Minus, Trash2, Send, Phone } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import { ImageWithFallback } from "./figma/ImageWithFallback";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "./ui/sheet";
-import { Input } from "./ui/input";
-import { Label } from "./ui/label";
-import { Textarea } from "./ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "./ui/dialog";
+import { ImageWithFallback } from "@/components/common/ImageWithFallback";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { projectId, publicAnonKey } from "../utils/supabase/info";
+import { supabaseConfig } from "@/lib/supabase/client";
+const { projectId, anonKey: publicAnonKey } = supabaseConfig;
 import logo from "figma:asset/9c86d23f18fc72c44e1d78d8a22180272cd5d4f6.png";
-import bannerImage from "../../assets/BANNER (10).png";
-import { getWeekIdentifier } from "../utils/weekHelpers";
-import { provinces, districts, wards } from "../utils/vietnamLocations";
+// import bannerImage from "@/assets/BANNER (10).png"; // TODO: Add banner image
+import { getWeekIdentifier } from "@/lib/utils/weekHelpers";
+import { provinces, districts, wards } from "@/lib/utils/vietnamLocations";
 // @ts-expect-error - lunar-javascript doesn't have TypeScript types
 import { Solar } from "lunar-javascript";
 
@@ -538,14 +539,12 @@ export function CustomerView() {
       </header>
 
       {/* Hero Banner with Image */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100">
+      <div className="relative overflow-hidden bg-gradient-to-br from-emerald-50 to-green-100">
         {/* Banner Image - No overlay text */}
-        <div className="relative w-full">
-          <img
-            src={bannerImage}
-            alt="Bếp Chay Dì Muộn Banner"
-            className="h-auto max-h-[500px] w-full object-contain"
-          />
+        <div className="relative w-full py-12 text-center">
+          <h1 className="text-4xl font-bold text-emerald-800">🥗 Bếp Chay Dì 7 Muộn</h1>
+          <p className="mt-2 text-lg text-emerald-600">Thực đơn chay hàng tuần</p>
+          {/* TODO: Add banner image when available */}
         </div>
       </div>
 

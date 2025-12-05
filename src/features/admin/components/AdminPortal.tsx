@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { WeeklyMenu } from "./WeeklyMenu";
+import { WeeklyMenu } from "@/features/customer/components/WeeklyMenu";
 import { OrderManagement } from "./OrderManagement";
 import { DishLibrary } from "./DishLibrary";
-import { Button } from "./ui/button";
+import { Button } from "@/components/ui/button";
 import { ClipboardList, Menu, X, BookOpen } from "lucide-react";
 import { motion } from "motion/react";
 

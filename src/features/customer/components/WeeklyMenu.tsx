@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import { Badge } from "./ui/badge";
-import { Button } from "./ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Trash2, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import { motion } from "motion/react";
-import { ImageWithFallback } from "./figma/ImageWithFallback";
+import { ImageWithFallback } from "@/components/common/ImageWithFallback";
 import { toast } from "sonner";
-import { projectId, publicAnonKey } from "../utils/supabase/info";
-import { AddDishToMenu } from "./AddDishToMenu";
-import { getWeekIdentifier, getMonday as getMondayHelper, getWeekDates as getWeekDatesHelper } from "../utils/weekHelpers";
+import { supabaseConfig } from "@/lib/supabase/client";
+const { projectId, anonKey: publicAnonKey } = supabaseConfig;
+import { AddDishToMenu } from "@/features/admin/components/AddDishToMenu";
+import { getWeekIdentifier, getMonday as getMondayHelper, getWeekDates as getWeekDatesHelper } from "@/lib/utils/weekHelpers";
 // @ts-expect-error - lunar-javascript doesn't have TypeScript types
 import { Solar } from "lunar-javascript";
 

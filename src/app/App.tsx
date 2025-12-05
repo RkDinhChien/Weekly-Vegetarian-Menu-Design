@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { CustomerView } from "./components/CustomerView";
-import { AdminPortal } from "./components/AdminPortal";
+import { CustomerView } from "@/features/customer/components/CustomerView";
+import { AdminPortal } from "@/features/admin/components/AdminPortal";
 
 export default function App() {
   const [showAdmin, setShowAdmin] = useState(false);

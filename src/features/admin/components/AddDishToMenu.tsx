@@ -1,16 +1,17 @@
 import { useEffect, useState } from "react";
-import { Button } from "./ui/button";
-import { Label } from "./ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
-import { Badge } from "./ui/badge";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "./ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Plus, BookOpen, Calendar } from "lucide-react";
 import { toast } from "sonner";
-import { ImageWithFallback } from "./figma/ImageWithFallback";
-import { projectId, publicAnonKey } from "../utils/supabase/info";
-import { Input } from "./ui/input";
-import { Switch } from "./ui/switch";
-import { getWeekIdentifier, getMonday } from "../utils/weekHelpers";
+import { ImageWithFallback } from "@/components/common/ImageWithFallback";
+import { supabaseConfig } from "@/lib/supabase/client";
+const { projectId, anonKey: publicAnonKey } = supabaseConfig;
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import { getWeekIdentifier, getMonday } from "@/lib/utils/weekHelpers";
 
 interface SizeOption {
   name: string;

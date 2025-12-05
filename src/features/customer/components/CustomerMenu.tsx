@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
-import { Badge } from "./ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Leaf, Star } from "lucide-react";
 import { motion } from "motion/react";
-import { ImageWithFallback } from "./figma/ImageWithFallback";
+import { ImageWithFallback } from "@/components/common/ImageWithFallback";
 import logo from "figma:asset/da0287e4ba0aca17a7f033d98e20aceb35365d22.png";
-import { projectId, publicAnonKey } from "../utils/supabase/info";
+import { supabaseConfig } from "@/lib/supabase/client";
+const { projectId, anonKey: publicAnonKey } = supabaseConfig;
 
 interface SizeOption {
   name: string;

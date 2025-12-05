@@ -1,7 +1,7 @@
 /**
  * Date and Week Helper Utilities
  */
-import { DAYS_OF_WEEK, type DayOfWeek } from '@/types';
+import { DAYS_OF_WEEK, type DayOfWeek } from "@/types";
 
 /**
  * Get date for a specific day in the week with offset
@@ -26,10 +26,10 @@ export const getDateForDay = (dayName: DayOfWeek, weekOffset: number = 0): Date 
  * Format date to Vietnamese format (dd/mm/yyyy)
  */
 export const formatDate = (date: Date): string => {
-  return date.toLocaleDateString("vi-VN", { 
-    day: "2-digit", 
+  return date.toLocaleDateString("vi-VN", {
+    day: "2-digit",
     month: "2-digit",
-    year: "numeric"
+    year: "numeric",
   });
 };
 
@@ -37,9 +37,9 @@ export const formatDate = (date: Date): string => {
  * Format date for display (dd/mm)
  */
 export const formatDateShort = (date: Date): string => {
-  return date.toLocaleDateString("vi-VN", { 
-    day: "2-digit", 
-    month: "2-digit" 
+  return date.toLocaleDateString("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
   });
 };
 
@@ -64,7 +64,7 @@ export const getWeekIdentifier = (date: Date = new Date()): string => {
   const startOfYear = new Date(year, 0, 1);
   const days = Math.floor((date.getTime() - startOfYear.getTime()) / (24 * 60 * 60 * 1000));
   const weekNumber = Math.ceil((days + startOfYear.getDay() + 1) / 7);
-  return `${year}-W${weekNumber.toString().padStart(2, '0')}`;
+  return `${year}-W${weekNumber.toString().padStart(2, "0")}`;
 };
 
 /**
@@ -82,7 +82,7 @@ export const getCurrentWeekNumber = (): number => {
  */
 export const parseDateString = (dateStr: string): Date | null => {
   try {
-    const [day, month, year] = dateStr.split('/').map(Number);
+    const [day, month, year] = dateStr.split("/").map(Number);
     return new Date(year, month - 1, day);
   } catch {
     return null;

@@ -10,6 +10,7 @@
 ## ✨ Features
 
 ### Customer Features
+
 - 📅 **Weekly Menu Display** - Browse vegetarian menu by day
 - 🛒 **Shopping Cart** - Add/remove items with size options
 - 📝 **Order Placement** - Complete ordering with delivery details
@@ -18,6 +19,7 @@
 - 🌙 **Dark Mode Support** - Comfortable viewing experience
 
 ### Admin Features
+
 - 📋 **Menu Management** - CRUD operations for menu items
 - 📦 **Order Tracking** - Real-time order status updates
 - 🍽️ **Dish Library** - Manage reusable dish database
@@ -27,37 +29,42 @@
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - **Node.js** 18+ and **pnpm** (or npm/yarn)
 - **Supabase Account** for backend services
 
 ### Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/RkDinhChien/Weekly-Vegetarian-Menu-Design.git
    cd Weekly-Vegetarian-Menu-Design
    ```
 
 2. **Install dependencies**
+
    ```bash
    pnpm install
    ```
 
 3. **Set up environment variables**
-   
+
    Create a `.env` file in the root directory:
+
    ```env
    VITE_SUPABASE_URL=https://your-project-id.supabase.co
    VITE_SUPABASE_ANON_KEY=your-anon-key-here
    ```
-   
+
    Get your credentials from [Supabase Dashboard](https://supabase.com/dashboard) → Project Settings → API
 
 4. **Start development server**
+
    ```bash
    pnpm dev
    ```
-   
+
    Open [http://localhost:3000](http://localhost:3000)
 
 5. **Build for production**
@@ -113,6 +120,7 @@ Weekly-Vegetarian-Menu-Design/
 ## 🛠️ Tech Stack
 
 ### Frontend
+
 - **React 18.3** - UI library with hooks
 - **TypeScript 5.7** - Type-safe JavaScript
 - **Tailwind CSS 3.4** - Utility-first CSS framework
@@ -122,6 +130,7 @@ Weekly-Vegetarian-Menu-Design/
 - **shadcn/ui** - High-quality UI components
 
 ### Backend
+
 - **Supabase** - Backend-as-a-Service
   - PostgreSQL database
   - Real-time subscriptions
@@ -129,6 +138,7 @@ Weekly-Vegetarian-Menu-Design/
   - File storage
 
 ### Development Tools
+
 - **ESLint** - Code linting
 - **Prettier** - Code formatting
 - **PostCSS** - CSS processing
@@ -137,20 +147,25 @@ Weekly-Vegetarian-Menu-Design/
 ## 📚 Key Concepts
 
 ### Feature-Based Architecture
+
 Components are organized by feature (customer, admin, ordering) for better scalability and maintainability.
 
 ### API Service Layer
+
 Centralized API calls in `src/lib/api/` prevent code duplication and improve error handling.
 
 ### Type Safety
+
 Shared TypeScript types in `src/types/` ensure consistency across the application.
 
 ### Path Aliases
+
 Clean imports using `@/` prefix:
+
 ```typescript
-import { Button } from '@/components/ui/button';
-import { api } from '@/lib/api';
-import type { MenuItem } from '@/types';
+import { Button } from "@/components/ui/button";
+import { api } from "@/lib/api";
+import type { MenuItem } from "@/types";
 ```
 
 ## 🔒 Security Best Practices
@@ -174,19 +189,23 @@ pnpm type-check   # Run TypeScript compiler
 ## 🚀 Deployment
 
 ### Deploy to Vercel
+
 ```bash
 npm install -g vercel
 vercel
 ```
 
 ### Deploy to Netlify
+
 ```bash
 pnpm build
 # Upload the 'build' folder to Netlify
 ```
 
 ### Environment Variables for Production
+
 Set these in your hosting platform:
+
 - `VITE_SUPABASE_URL`
 - `VITE_SUPABASE_ANON_KEY`
 

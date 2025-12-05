@@ -2,28 +2,25 @@
  * API Service Layer
  * Centralized API calls to Supabase Edge Functions
  */
-import { supabaseConfig } from '../supabase/client';
-import type { MenuItem, Order, Dish, Category } from '@/types';
+import { supabaseConfig } from "../supabase/client";
+import type { MenuItem, Order, Dish, Category } from "@/types";
 
 const { projectId, anonKey } = supabaseConfig;
 
 // Base URL for all API calls
-const getApiUrl = (endpoint: string) => 
+const getApiUrl = (endpoint: string) =>
   `https://${projectId}.supabase.co/functions/v1/make-server-49570ec2/${endpoint}`;
 
 // Standard headers for all requests
 const getHeaders = () => ({
-  'Content-Type': 'application/json',
-  'Authorization': `Bearer ${anonKey}`,
+  "Content-Type": "application/json",
+  Authorization: `Bearer ${anonKey}`,
 });
 
 /**
  * Generic API request handler with error handling
  */
-async function apiRequest<T>(
-  endpoint: string,
-  options: RequestInit = {}
-): Promise<T> {
+async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   try {
     const response = await fetch(getApiUrl(endpoint), {
       ...options,
@@ -50,13 +47,12 @@ export const menuApi = {
   /**
    * Fetch all menu items
    */
-  getAll: () => apiRequest<MenuItem[]>('menu'),
+  getAll: () => apiRequest<MenuItem[]>("menu"),
 
   /**
    * Fetch menu items by week
    */
-  getByWeek: (weekId: string) => 
-    apiRequest<MenuItem[]>(`menu?weekId=${weekId}`),
+  getByWeek: (weekId: string) => apiRequest<MenuItem[]>(`menu?weekId=${weekId}`),
 
   /**
    * Fetch menu items by day
@@ -70,8 +66,8 @@ export const menuApi = {
    * Add dish to menu
    */
   addDish: (data: { dishId: string; day: string; weekId: string }) =>
-    apiRequest<MenuItem>('menu', {
-      method: 'POST',
+    apiRequest<MenuItem>("menu", {
+      method: "POST",
       body: JSON.stringify(data),
     }),
 
@@ -80,7 +76,7 @@ export const menuApi = {
    */
   remove: (id: string) =>
     apiRequest<void>(`menu/${id}`, {
-      method: 'DELETE',
+      method: "DELETE",
     }),
 };
 
@@ -90,15 +86,15 @@ export const ordersApi = {
    * Create new order
    */
   create: (orderData: Partial<Order>) =>
-    apiRequest<Order>('orders', {
-      method: 'POST',
+    apiRequest<Order>("orders", {
+      method: "POST",
       body: JSON.stringify(orderData),
     }),
 
   /**
    * Get all orders
    */
-  getAll: () => apiRequest<Order[]>('orders'),
+  getAll: () => apiRequest<Order[]>("orders"),
 
   /**
    * Get order by ID
@@ -110,7 +106,7 @@ export const ordersApi = {
    */
   updateStatus: (id: string, status: string) =>
     apiRequest<Order>(`orders/${id}`, {
-      method: 'PATCH',
+      method: "PATCH",
       body: JSON.stringify({ status }),
     }),
 
@@ -119,7 +115,7 @@ export const ordersApi = {
    */
   delete: (id: string) =>
     apiRequest<void>(`orders/${id}`, {
-      method: 'DELETE',
+      method: "DELETE",
     }),
 };
 
@@ -128,7 +124,7 @@ export const dishesApi = {
   /**
    * Get all dishes
    */
-  getAll: () => apiRequest<Dish[]>('dishes'),
+  getAll: () => apiRequest<Dish[]>("dishes"),
 
   /**
    * Get dish by ID
@@ -139,8 +135,8 @@ export const dishesApi = {
    * Create new dish
    */
   create: (dishData: Partial<Dish>) =>
-    apiRequest<Dish>('dishes', {
-      method: 'POST',
+    apiRequest<Dish>("dishes", {
+      method: "POST",
       body: JSON.stringify(dishData),
     }),
 
@@ -149,7 +145,7 @@ export const dishesApi = {
    */
   update: (id: string, dishData: Partial<Dish>) =>
     apiRequest<Dish>(`dishes/${id}`, {
-      method: 'PUT',
+      method: "PUT",
       body: JSON.stringify(dishData),
     }),
 
@@ -158,7 +154,7 @@ export const dishesApi = {
    */
   delete: (id: string) =>
     apiRequest<void>(`dishes/${id}`, {
-      method: 'DELETE',
+      method: "DELETE",
     }),
 };
 
@@ -167,14 +163,14 @@ export const categoriesApi = {
   /**
    * Get all categories
    */
-  getAll: () => apiRequest<Category[]>('categories'),
+  getAll: () => apiRequest<Category[]>("categories"),
 
   /**
    * Create new category
    */
   create: (categoryData: Partial<Category>) =>
-    apiRequest<Category>('categories', {
-      method: 'POST',
+    apiRequest<Category>("categories", {
+      method: "POST",
       body: JSON.stringify(categoryData),
     }),
 
@@ -183,7 +179,7 @@ export const categoriesApi = {
    */
   update: (id: string, categoryData: Partial<Category>) =>
     apiRequest<Category>(`categories/${id}`, {
-      method: 'PUT',
+      method: "PUT",
       body: JSON.stringify(categoryData),
     }),
 
@@ -192,7 +188,7 @@ export const categoriesApi = {
    */
   delete: (id: string) =>
     apiRequest<void>(`categories/${id}`, {
-      method: 'DELETE',
+      method: "DELETE",
     }),
 };
 
@@ -203,18 +199,18 @@ export const imagesApi = {
    */
   upload: async (file: File): Promise<{ url: string }> => {
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append("file", file);
 
-    const response = await fetch(getApiUrl('upload-image'), {
-      method: 'POST',
+    const response = await fetch(getApiUrl("upload-image"), {
+      method: "POST",
       headers: {
-        'Authorization': `Bearer ${anonKey}`,
+        Authorization: `Bearer ${anonKey}`,
       },
       body: formData,
     });
 
     if (!response.ok) {
-      throw new Error('Image upload failed');
+      throw new Error("Image upload failed");
     }
 
     return await response.json();

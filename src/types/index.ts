@@ -79,7 +79,13 @@ export interface OrderItem {
   selectedSize?: string;
 }
 
-export type OrderStatus = 'pending' | 'confirmed' | 'preparing' | 'delivering' | 'completed' | 'cancelled';
+export type OrderStatus =
+  | "pending"
+  | "confirmed"
+  | "preparing"
+  | "delivering"
+  | "completed"
+  | "cancelled";
 
 // ============= DISH LIBRARY TYPES =============
 export interface Dish {
@@ -110,15 +116,15 @@ export interface ApiError {
 // ============= CONSTANTS =============
 export const DAYS_OF_WEEK = [
   "Thứ Hai",
-  "Thứ Ba", 
+  "Thứ Ba",
   "Thứ Tư",
   "Thứ Năm",
   "Thứ Sáu",
   "Thứ Bảy",
-  "Chủ Nhật"
+  "Chủ Nhật",
 ] as const;
 
-export type DayOfWeek = typeof DAYS_OF_WEEK[number];
+export type DayOfWeek = (typeof DAYS_OF_WEEK)[number];
 
 export const CATEGORY_COLORS: Record<string, string> = {
   "Món Cuốn": "bg-amber-100 text-amber-800 border-amber-300",

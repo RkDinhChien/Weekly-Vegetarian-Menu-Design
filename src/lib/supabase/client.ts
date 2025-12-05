@@ -10,12 +10,12 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 // Validate environment variables
 if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error(
-    '❌ Missing Supabase credentials! Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in .env file'
+    "❌ Missing Supabase credentials! Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in .env file"
   );
 }
 
 // Extract project ID from URL (e.g., https://PROJECT_ID.supabase.co)
-export const projectId = supabaseUrl.replace('https://', '').split('.')[0];
+export const projectId = supabaseUrl.replace("https://", "").split(".")[0];
 export const publicAnonKey = supabaseAnonKey;
 
 // Export configured values
